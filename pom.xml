@@ -1,10 +1,5 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-<!--    <parent>-->
-<!--        <groupId>org.apache.logging.log4j</groupId>-->
-<!--        <artifactId>log4j</artifactId>-->
-<!--        <version>2.18.1-SNAPSHOT</version>-->
-<!--    </parent>-->
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.logging.log4j</groupId>
     <version>2.18.0</version>
@@ -12,7 +7,6 @@
     <name>Apache Log4j Kusto</name>
     <description>Kusto appender for Log4j.</description>
     <properties>
-<!--        <log4jParentDir>${basedir}/..</log4jParentDir> -->
         <docLabel>Kusto Documentation</docLabel>
         <projectDir>/log4j-kusto</projectDir>
         <module.name>org.apache.logging.log4j.kusto</module.name>
@@ -37,35 +31,6 @@
             <artifactId>kusto-ingest</artifactId>
             <version>${kusto.data.version}</version>
         </dependency>
-<!--        &lt;!&ndash; Test Dependencies &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.junit.vintage</groupId>-->
-<!--            <artifactId>junit-vintage-engine</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.junit.jupiter</groupId>-->
-<!--            <artifactId>junit-jupiter-engine</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.mockito</groupId>-->
-<!--            <artifactId>mockito-core</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.logging.log4j</groupId>-->
-<!--            <artifactId>log4j-api</artifactId>-->
-<!--            <type>test-jar</type>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.logging.log4j</groupId>-->
-<!--            <artifactId>log4j-core</artifactId>-->
-<!--            <type>test-jar</type>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.apache.logging.log4j</groupId>-->
-<!--            <artifactId>log4j-slf4j-impl</artifactId>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
     </dependencies>
     <!--
     mvn versions:display-plugin-updates
@@ -75,16 +40,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <configuration>
-                    <instructions>
-                        <Fragment-Host>org.apache.logging.log4j.core</Fragment-Host>
-                        <Export-Package>*</Export-Package>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.10.1</version>
@@ -93,92 +48,15 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <version>2.20.0</version>
+                <configuration>
+                    <configFile>${project.basedir}/formatter.xml</configFile>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-<!--    <reporting>-->
-<!--        <plugins>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-changes-plugin</artifactId>-->
-<!--                <version>${changes.plugin.version}</version>-->
-<!--                <reportSets>-->
-<!--                    <reportSet>-->
-<!--                        <reports>-->
-<!--                            <report>changes-report</report>-->
-<!--                        </reports>-->
-<!--                    </reportSet>-->
-<!--                </reportSets>-->
-<!--                <configuration>-->
-<!--                    <issueLinkTemplate>%URL%/show_bug.cgi?id=%ISSUE%</issueLinkTemplate>-->
-<!--                    <useJql>true</useJql>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-checkstyle-plugin</artifactId>-->
-<!--                <version>${checkstyle.plugin.version}</version>-->
-<!--                <configuration>-->
-<!--                    &lt;!&ndash;<propertiesLocation>${vfs.parent.dir}/checkstyle.properties</propertiesLocation> &ndash;&gt;-->
-<!--                    <configLocation>${log4jParentDir}/checkstyle.xml</configLocation>-->
-<!--                    <suppressionsLocation>${log4jParentDir}/checkstyle-suppressions.xml</suppressionsLocation>-->
-<!--                    <enableRulesSummary>false</enableRulesSummary>-->
-<!--                    <propertyExpansion>basedir=${basedir}</propertyExpansion>-->
-<!--                    <propertyExpansion>licensedir=${log4jParentDir}/checkstyle-header.txt</propertyExpansion>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-javadoc-plugin</artifactId>-->
-<!--                <version>${javadoc.plugin.version}</version>-->
-<!--                <configuration>-->
-<!--                    <bottom><![CDATA[<p align="center">Copyright &#169; {inceptionYear}-{currentYear} {organizationName}. All Rights Reserved.<br />-->
-<!--            Apache Logging, Apache Log4j, Log4j, Apache, the Apache feather logo, the Apache Logging project logo,-->
-<!--            and the Apache Log4j logo are trademarks of The Apache Software Foundation.</p>]]></bottom>-->
-<!--                    &lt;!&ndash; module link generation is completely broken in the javadoc plugin for a multi-module non-aggregating-->
-<!--                         project &ndash;&gt;-->
-<!--                    <detectOfflineLinks>false</detectOfflineLinks>-->
-<!--                    <linksource>true</linksource>-->
-<!--                </configuration>-->
-<!--                <reportSets>-->
-<!--                    <reportSet>-->
-<!--                        <id>non-aggregate</id>-->
-<!--                        <reports>-->
-<!--                            <report>javadoc</report>-->
-<!--                        </reports>-->
-<!--                    </reportSet>-->
-<!--                </reportSets>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>com.github.spotbugs</groupId>-->
-<!--                <artifactId>spotbugs-maven-plugin</artifactId>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-jxr-plugin</artifactId>-->
-<!--                <version>${jxr.plugin.version}</version>-->
-<!--                <reportSets>-->
-<!--                    <reportSet>-->
-<!--                        <id>non-aggregate</id>-->
-<!--                        <reports>-->
-<!--                            <report>jxr</report>-->
-<!--                        </reports>-->
-<!--                    </reportSet>-->
-<!--                    <reportSet>-->
-<!--                        <id>aggregate</id>-->
-<!--                        <reports>-->
-<!--                            <report>aggregate</report>-->
-<!--                        </reports>-->
-<!--                    </reportSet>-->
-<!--                </reportSets>-->
-<!--            </plugin>-->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-pmd-plugin</artifactId>-->
-<!--                <version>${pmd.plugin.version}</version>-->
-<!--                <configuration>-->
-<!--                    <targetJdk>${maven.compiler.target}</targetJdk>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-<!--        </plugins>-->
-<!--    </reporting>-->
 </project>
