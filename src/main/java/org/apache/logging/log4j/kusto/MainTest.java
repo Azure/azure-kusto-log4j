@@ -9,16 +9,11 @@ public class MainTest {
 
     public static void main(String[] args) {
         for (int i = 0; i < 10000; i++) {
-            logger.info("Kusto log info example");
-            logger.warn("Kusto log warn example");
-            logger.error("Kusto log info example", new RuntimeException("A Random exception"));
-            logger.info("Kusto log with parameter {}", "Parameter");
-            logger.warn("Kusto log with parameters {} and value {}", "Parameter", 2);
-            try {
-                Thread.sleep(5);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            logger.info("{} - log4j info example", i);
+            logger.warn("{} - log4j warn example", i);
+            logger.error("log4j info example", new RuntimeException(i+" - A Random exception"));
+            logger.info("log4j with parameter {} and {} ", "Parameter", i);
+            logger.warn("log4j with parameters {} and value {}", "Parameter", i);
         }
     }
 }

@@ -77,11 +77,9 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             LOGGER.error("Could not initialize ingest client", e);
             throw new RuntimeException(e);
         }
-
     }
 
     /**
-     * @param fileIndex
      * @param clusterPath
      * @param appId
      * @param appKey
@@ -94,12 +92,11 @@ public class KustoStrategy extends DefaultRolloverStrategy {
      * @return KustoStrategy
      */
     @PluginFactory
-    public static KustoStrategy createStrategy(@PluginAttribute("fileIndex") final String fileIndex,
-            @PluginAttribute("clusterPath") final String clusterPath, @PluginAttribute("appId") final String appId,
-            @PluginAttribute("appKey") final String appKey, @PluginAttribute("appTenant") final String appTenant,
-            @PluginAttribute("dbName") final String dbName, @PluginAttribute("tableName") final String tableName,
-            @PluginAttribute("logTableMapping") final String logTableMapping, @PluginAttribute("mappingType") final String mappingType,
-            @PluginConfiguration final Configuration config) {
+    public static KustoStrategy createStrategy(@PluginAttribute("clusterPath") final String clusterPath,
+            @PluginAttribute("appId") final String appId, @PluginAttribute("appKey") final String appKey,
+            @PluginAttribute("appTenant") final String appTenant, @PluginAttribute("dbName") final String dbName,
+            @PluginAttribute("tableName") final String tableName, @PluginAttribute("logTableMapping") final String logTableMapping,
+            @PluginAttribute("mappingType") final String mappingType, @PluginConfiguration final Configuration config) {
         KustoConfig kustoConfig = new KustoConfig(clusterPath, appId, appKey, appTenant, dbName, tableName, logTableMapping, mappingType);
         return new KustoStrategy(MIN_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, true, Deflater.DEFAULT_COMPRESSION, config.getStrSubstitutor(),
                 kustoConfig);
@@ -113,7 +110,6 @@ public class KustoStrategy extends DefaultRolloverStrategy {
      */
     public RolloverDescription rollover(final RollingFileManager manager) {
         RolloverDescription ret = super.rollover(manager);
-        return new KustoRolloverAction.KustoRolloverDescription(ret, ingestClient, ingestionProperties);
+        return new KustoRolloverDescription(ret, ingestClient, ingestionProperties);
     }
-
 }
