@@ -9,14 +9,12 @@ import com.microsoft.azure.kusto.ingest.IngestionProperties;
 class KustoRolloverDescription implements RolloverDescription {
 
     private final RolloverDescription delegate;
-    private final IngestClient ingestClient;
-    private final IngestionProperties ingestionProperties;
 
-    KustoRolloverDescription(final RolloverDescription delegate, final IngestClient ingestClient,
-            final IngestionProperties ingestionProperties) {
+    private final String fileName;
+
+    KustoRolloverDescription(final RolloverDescription delegate, String fileName) {
         this.delegate = delegate;
-        this.ingestClient = ingestClient;
-        this.ingestionProperties = ingestionProperties;
+        this.fileName = fileName;
     }
 
     @Override
@@ -36,7 +34,7 @@ class KustoRolloverDescription implements RolloverDescription {
         if (delegateAction == null) {
             return null;
         }
-        return new KustoFlushAction(delegateAction, delegate.getActiveFileName(), ingestClient, ingestionProperties);
+        return new KustoFlushAction(delegateAction, this.fileName);
     }
 
     // The asynchronous action is for compressing, we don't need to hook here

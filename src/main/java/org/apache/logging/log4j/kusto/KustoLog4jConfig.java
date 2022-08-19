@@ -1,6 +1,6 @@
 package org.apache.logging.log4j.kusto;
 
-class KustoConfig {
+class KustoLog4jConfig {
 
     final String clusterPath;
     final String appId;
@@ -11,8 +11,14 @@ class KustoConfig {
     final String logTableMapping;
     final String mappingType;
 
-    KustoConfig(String clusterPath, String appId, String appKey, String appTenant, String dbName, String tableName, String logTableMapping,
-            String mappingType) {
+    final String proxyUrl;
+
+    final Integer backOffMinMinutes;
+
+    final Integer backOffMaxMinutes;
+
+    KustoLog4jConfig(String clusterPath, String appId, String appKey, String appTenant, String dbName, String tableName,
+            String logTableMapping, String mappingType, String proxyUrl, Integer backOffMinMinutes, Integer backOffMaxMinutes) {
         this.clusterPath = clusterPath;
         this.appId = appId;
         this.appKey = appKey;
@@ -21,5 +27,8 @@ class KustoConfig {
         this.tableName = tableName;
         this.logTableMapping = logTableMapping;
         this.mappingType = mappingType;
+        this.proxyUrl = proxyUrl;
+        this.backOffMaxMinutes = backOffMaxMinutes;
+        this.backOffMinMinutes = backOffMinMinutes;
     }
 }

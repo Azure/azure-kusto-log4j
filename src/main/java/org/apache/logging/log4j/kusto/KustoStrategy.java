@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
 import org.apache.logging.log4j.core.appender.rolling.RollingFileManager;
 import org.apache.logging.log4j.core.appender.rolling.RolloverDescription;
+import org.apache.logging.log4j.core.appender.rolling.action.FileRenameAction;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
@@ -28,16 +29,9 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.apache.logging.log4j.status.StatusLogger;
 
-import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder;
-import com.microsoft.azure.kusto.ingest.IngestClient;
-import com.microsoft.azure.kusto.ingest.IngestClientFactory;
-import com.microsoft.azure.kusto.ingest.IngestionMapping;
-import com.microsoft.azure.kusto.ingest.IngestionProperties;
-
-import static com.microsoft.azure.kusto.ingest.IngestionMapping.IngestionMappingKind.CSV;
-import static com.microsoft.azure.kusto.ingest.IngestionMapping.IngestionMappingKind.JSON;
-
+import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Objects;
 import java.util.zip.Deflater;
 
 /**
@@ -50,29 +44,17 @@ public class KustoStrategy extends DefaultRolloverStrategy {
      * A logger
      */
     protected static final Logger LOGGER = StatusLogger.getLogger();
-
     private static final int MIN_WINDOW_SIZE = 1;
     private static final int DEFAULT_WINDOW_SIZE = 3;
-
-    private final IngestClient ingestClient;
-    private final IngestionProperties ingestionProperties;
+    private static final int DEFAULT_BACKOFF_MIN_TIME_MINUTES = 1;
+    private static final int DEFAULT_BACKOFF_MAX_TIME_MINUTES = 60;
 
     protected KustoStrategy(int minIndex, int maxIndex, boolean useMax, int compressionLevel, StrSubstitutor subst,
-            KustoConfig kustoConfig) {
+            KustoLog4jConfig kustoLog4jConfig) {
         super(minIndex, maxIndex, useMax, compressionLevel, subst, null, true, "");
-        ConnectionStringBuilder csb = "".equals(kustoConfig.appKey) || "".equals(kustoConfig.appTenant)
-                ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoConfig.clusterPath, kustoConfig.appId)
-                : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoConfig.clusterPath, kustoConfig.appId,
-                        kustoConfig.appKey, kustoConfig.appTenant);
         try {
-            ingestClient = IngestClientFactory.createClient(csb);
-            ingestionProperties = new IngestionProperties(kustoConfig.dbName, kustoConfig.tableName);
-            if (kustoConfig.logTableMapping != null && kustoConfig.mappingType != null && !"".equals(kustoConfig.logTableMapping.trim())
-                    && !"".equals(kustoConfig.mappingType.trim())) {
-                LOGGER.error("Using mapping " + kustoConfig.logTableMapping + " of type " + kustoConfig.mappingType);
-                IngestionMapping.IngestionMappingKind mappingType = "json".equalsIgnoreCase(kustoConfig.mappingType) ? JSON : CSV;
-                ingestionProperties.getIngestionMapping().setIngestionMappingReference(kustoConfig.logTableMapping, mappingType);
-            }
+            KustoClientInstance initializedInstance = KustoClientInstance.getInstance(kustoLog4jConfig);
+            Objects.requireNonNull(initializedInstance, "Kusto initialized instance cannot be null");
         } catch (URISyntaxException e) {
             LOGGER.error("Could not initialize ingest client", e);
             throw new RuntimeException(e);
@@ -96,10 +78,18 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             @PluginAttribute("appId") final String appId, @PluginAttribute("appKey") final String appKey,
             @PluginAttribute("appTenant") final String appTenant, @PluginAttribute("dbName") final String dbName,
             @PluginAttribute("tableName") final String tableName, @PluginAttribute("logTableMapping") final String logTableMapping,
-            @PluginAttribute("mappingType") final String mappingType, @PluginConfiguration final Configuration config) {
-        KustoConfig kustoConfig = new KustoConfig(clusterPath, appId, appKey, appTenant, dbName, tableName, logTableMapping, mappingType);
+            @PluginAttribute("mappingType") final String mappingType, @PluginAttribute("proxyUrl") final String proxyUrl,
+            @PluginAttribute("backOffMinMinutes") String backOffMinMinutes, @PluginAttribute("backOffMaxMinutes") String backOffMaxMinutes,
+            @PluginConfiguration final Configuration config) {
+        Integer backOffMax = backOffMaxMinutes != null && backOffMaxMinutes.trim().length() > 0 ? Integer.parseInt(backOffMaxMinutes)
+                : DEFAULT_BACKOFF_MAX_TIME_MINUTES;
+        Integer backOffMin = backOffMinMinutes != null && Objects.requireNonNull(backOffMinMinutes).trim().length() > 0
+                ? Integer.parseInt(backOffMinMinutes)
+                : DEFAULT_BACKOFF_MIN_TIME_MINUTES;
+        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(clusterPath, appId, appKey, appTenant, dbName, tableName, logTableMapping,
+                mappingType, proxyUrl, backOffMin, backOffMax);
         return new KustoStrategy(MIN_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, true, Deflater.DEFAULT_COMPRESSION, config.getStrSubstitutor(),
-                kustoConfig);
+                kustoLog4jConfig);
     }
 
     /**
@@ -109,7 +99,17 @@ public class KustoStrategy extends DefaultRolloverStrategy {
      * @return RolloverDescription
      */
     public RolloverDescription rollover(final RollingFileManager manager) {
-        RolloverDescription ret = super.rollover(manager);
-        return new KustoRolloverDescription(ret, ingestClient, ingestionProperties);
+        RolloverDescription rolloverDescription = super.rollover(manager);
+        String path = "";
+        if (rolloverDescription.getSynchronous() instanceof FileRenameAction) {
+            File file = ((FileRenameAction) rolloverDescription.getSynchronous()).getDestination();
+            path = file.getPath();
+            try {
+                LOGGER.warn(">>>>>>>>>>>>>>>>{}<<<<<<<<<<<<", path);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return new KustoRolloverDescription(rolloverDescription, path);
     }
 }
