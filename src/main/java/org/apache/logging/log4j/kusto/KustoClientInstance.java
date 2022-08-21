@@ -1,18 +1,5 @@
 package org.apache.logging.log4j.kusto;
 
-import dev.failsafe.Failsafe;
-import dev.failsafe.Fallback;
-import dev.failsafe.FallbackBuilder;
-import dev.failsafe.RetryPolicy;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.temporal.ChronoUnit;
-
 import org.apache.http.HttpHost;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.status.StatusLogger;
@@ -31,7 +18,17 @@ import com.microsoft.azure.storage.StorageException;
 
 import static com.microsoft.azure.kusto.ingest.IngestionMapping.IngestionMappingKind.CSV;
 import static com.microsoft.azure.kusto.ingest.IngestionMapping.IngestionMappingKind.JSON;
-import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
+
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.temporal.ChronoUnit;
 
 public final class KustoClientInstance {
 
@@ -84,16 +81,8 @@ public final class KustoClientInstance {
         }
     }
 
-    static KustoClientInstance getInstance() {
+    public static KustoClientInstance getInstance() {
         return instance;
-    }
-
-    IngestClient getIngestClient() {
-        return ingestClient;
-    }
-
-    IngestionProperties getIngestionProperties() {
-        return ingestionProperties;
     }
 
     void ingestFile(String filePath) {
@@ -112,7 +101,7 @@ public final class KustoClientInstance {
             throws IngestionClientException, IngestionServiceException, IOException, URISyntaxException, StorageException {
         try (InputStream inputStream = Files.newInputStream(Paths.get(filePath))) {
             StreamSourceInfo streamSourceInfo = new StreamSourceInfo(inputStream);
-            return instance.getIngestClient().ingestFromStream(streamSourceInfo, instance.getIngestionProperties());
+            return ingestClient.ingestFromStream(streamSourceInfo, ingestionProperties);
         }
     }
 

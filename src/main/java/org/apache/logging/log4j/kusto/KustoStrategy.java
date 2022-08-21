@@ -86,10 +86,15 @@ public class KustoStrategy extends DefaultRolloverStrategy {
         Integer backOffMin = backOffMinMinutes != null && Objects.requireNonNull(backOffMinMinutes).trim().length() > 0
                 ? Integer.parseInt(backOffMinMinutes)
                 : DEFAULT_BACKOFF_MIN_TIME_MINUTES;
-        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(clusterPath, appId, appKey, appTenant, dbName, tableName, logTableMapping,
-                mappingType, proxyUrl, backOffMin, backOffMax);
+        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterPath, "clusterPath"), getOrEnvVar(appId, "appId"),
+                getOrEnvVar(appKey, "appKey"), getOrEnvVar(appTenant, "appTenant"), dbName, tableName, logTableMapping, mappingType,
+                proxyUrl, backOffMin, backOffMax);
         return new KustoStrategy(MIN_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, true, Deflater.DEFAULT_COMPRESSION, config.getStrSubstitutor(),
                 kustoLog4jConfig);
+    }
+
+    private static String getOrEnvVar(String value, String envVarName) {
+        return value != null && value.trim().length() > 0 ? value : System.getenv(envVarName);
     }
 
     /**
@@ -104,11 +109,6 @@ public class KustoStrategy extends DefaultRolloverStrategy {
         if (rolloverDescription.getSynchronous() instanceof FileRenameAction) {
             File file = ((FileRenameAction) rolloverDescription.getSynchronous()).getDestination();
             path = file.getPath();
-            try {
-                LOGGER.warn(">>>>>>>>>>>>>>>>{}<<<<<<<<<<<<", path);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
         }
         return new KustoRolloverDescription(rolloverDescription, path);
     }

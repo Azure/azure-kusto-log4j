@@ -3,9 +3,6 @@ package org.apache.logging.log4j.kusto;
 import org.apache.logging.log4j.core.appender.rolling.RolloverDescription;
 import org.apache.logging.log4j.core.appender.rolling.action.Action;
 
-import com.microsoft.azure.kusto.ingest.IngestClient;
-import com.microsoft.azure.kusto.ingest.IngestionProperties;
-
 class KustoRolloverDescription implements RolloverDescription {
 
     private final RolloverDescription delegate;
