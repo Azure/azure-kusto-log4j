@@ -18,7 +18,8 @@ class KustoLog4jConfig {
     final Integer backOffMaxMinutes;
 
     KustoLog4jConfig(String clusterPath, String appId, String appKey, String appTenant, String dbName, String tableName,
-            String logTableMapping, String mappingType, String proxyUrl, Integer backOffMinMinutes, Integer backOffMaxMinutes) {
+            String logTableMapping, String mappingType, String proxyUrl, Integer backOffMinMinutes,
+            Integer backOffMaxMinutes) {
         this.clusterPath = clusterPath;
         this.appId = appId;
         this.appKey = appKey;

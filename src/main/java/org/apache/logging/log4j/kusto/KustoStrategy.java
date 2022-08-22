@@ -75,11 +75,16 @@ public class KustoStrategy extends DefaultRolloverStrategy {
      */
     @PluginFactory
     public static KustoStrategy createStrategy(@PluginAttribute("clusterPath") final String clusterPath,
-            @PluginAttribute("appId") final String appId, @PluginAttribute("appKey") final String appKey,
-            @PluginAttribute("appTenant") final String appTenant, @PluginAttribute("dbName") final String dbName,
-            @PluginAttribute("tableName") final String tableName, @PluginAttribute("logTableMapping") final String logTableMapping,
-            @PluginAttribute("mappingType") final String mappingType, @PluginAttribute("proxyUrl") final String proxyUrl,
-            @PluginAttribute("backOffMinMinutes") String backOffMinMinutes, @PluginAttribute("backOffMaxMinutes") String backOffMaxMinutes,
+            @PluginAttribute("appId") final String appId,
+            @PluginAttribute("appKey") final String appKey,
+            @PluginAttribute("appTenant") final String appTenant,
+            @PluginAttribute("dbName") final String dbName,
+            @PluginAttribute("tableName") final String tableName,
+            @PluginAttribute("logTableMapping") final String logTableMapping,
+            @PluginAttribute("mappingType") final String mappingType,
+            @PluginAttribute("proxyUrl") final String proxyUrl,
+            @PluginAttribute("backOffMinMinutes") String backOffMinMinutes,
+            @PluginAttribute("backOffMaxMinutes") String backOffMaxMinutes,
             @PluginConfiguration final Configuration config) {
         Integer backOffMax = backOffMaxMinutes != null && backOffMaxMinutes.trim().length() > 0 ? Integer.parseInt(backOffMaxMinutes)
                 : DEFAULT_BACKOFF_MAX_TIME_MINUTES;
@@ -87,9 +92,11 @@ public class KustoStrategy extends DefaultRolloverStrategy {
                 ? Integer.parseInt(backOffMinMinutes)
                 : DEFAULT_BACKOFF_MIN_TIME_MINUTES;
         KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterPath, "clusterPath"), getOrEnvVar(appId, "appId"),
-                getOrEnvVar(appKey, "appKey"), getOrEnvVar(appTenant, "appTenant"), dbName, tableName, logTableMapping, mappingType,
+                getOrEnvVar(appKey, "appKey"), getOrEnvVar(appTenant, "appTenant"), dbName, tableName,
+                logTableMapping, mappingType,
                 proxyUrl, backOffMin, backOffMax);
-        return new KustoStrategy(MIN_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, true, Deflater.DEFAULT_COMPRESSION, config.getStrSubstitutor(),
+        return new KustoStrategy(MIN_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, true, Deflater.DEFAULT_COMPRESSION,
+                config.getStrSubstitutor(),
                 kustoLog4jConfig);
     }
 
