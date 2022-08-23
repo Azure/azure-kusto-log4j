@@ -1,22 +1,21 @@
 package org.apache.logging.log4j.kusto;
 
+import org.apache.logging.log4j.core.appender.rolling.action.AbstractAction;
 import org.apache.logging.log4j.core.appender.rolling.action.Action;
 
 import java.io.IOException;
 
-class KustoFlushAction implements Action {
+class KustoFlushAction extends AbstractAction {
 
     private final Action delegate;
     private final String fileName;
 
+    private boolean ingestComplete;
+
     public KustoFlushAction(final Action delegate, final String fileName) {
         this.delegate = delegate;
         this.fileName = fileName;
-    }
-
-    @Override
-    public void run() {
-        delegate.run();
+        this.ingestComplete = false;
     }
 
     @Override
@@ -25,6 +24,8 @@ class KustoFlushAction implements Action {
         if (execute) {
             KustoClientInstance.getInstance().ingestFile(fileName);
         }
+        // reaches here on completion , else IOException gets thrown
+        ingestComplete = true;
         return execute;
     }
 
@@ -36,6 +37,6 @@ class KustoFlushAction implements Action {
 
     @Override
     public boolean isComplete() {
-        return delegate.isComplete();
+        return this.ingestComplete;
     }
 }

@@ -91,7 +91,7 @@ public class KustoLog4jE2ETest {
     public static void tearDown() {
         Path archiveDirectory = Paths.get(filePatternAttribute).getParent();
         try (Stream<Path> paths = Files.walk(archiveDirectory)) {
-            // queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
+            queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
             paths.map(Path::toFile).forEach(File::deleteOnExit);
             File rollingFileToDelete = new File(fileNameAttribute);
             rollingFileToDelete.deleteOnExit();
@@ -142,13 +142,15 @@ public class KustoLog4jE2ETest {
             for (int i = 0; i < maxLoops; i++) {
                 LOGGER.info("{} - {}", i, logInfoMessage);
                 LOGGER.warn("{} - {}", i, logWarnMessage);
-                LOGGER.error(logErrorMessage, new RuntimeException(i + " - A Random exception"));
+                LOGGER.error(String.format("%s-%s", logErrorMessage, i),
+                        new RuntimeException(i + " - A Random exception"));
                 Thread.sleep(5);
             }
-            Thread.sleep(2 * 60_000);
+            Thread.sleep(1 * 60_000);
             String[] levelsToCheck = new String[] {logInfoMessage, logWarnMessage, logErrorMessage};
             for (String logLevel : levelsToCheck) {
-                String queryToExecute = String.format("%s | where formattedmessage has '%s'| summarize dcount(formattedmessage)", log4jCsvTableName, logLevel);
+                String queryToExecute = String.format("%s | where formattedmessage has '%s'| summarize dcount(formattedmessage)",
+                        log4jCsvTableName, logLevel);
                 KustoOperationResult queryResults = queryClient.execute(databaseName, queryToExecute);
                 KustoResultSetTable mainTableResult = queryResults.getPrimaryResults();
                 mainTableResult.next();
@@ -156,6 +158,7 @@ public class KustoLog4jE2ETest {
                 LOGGER.warn("Query {} yielded count {} ", queryToExecute, countsRetrieved);
                 Assertions.assertEquals(maxLoops, countsRetrieved,
                         String.format("For %s , counts did not match", logLevel));
+
             }
         } catch (InterruptedException | DataServiceException | DataClientException e) {
             Assertions.fail("Error querying counts from table", e);

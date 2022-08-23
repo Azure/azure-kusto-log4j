@@ -15,6 +15,7 @@
         <junit.version>5.9.0</junit.version>
         <powermock.version>2.0.9</powermock.version>
         <surefire.version>3.0.0-M7</surefire.version>
+        <mockito.version>4.7.0</mockito.version>
     </properties>
 
     <dependencies>
@@ -52,9 +53,15 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>4.2.0</version>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-inline</artifactId>
+            <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
