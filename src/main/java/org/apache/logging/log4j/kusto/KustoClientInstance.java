@@ -60,6 +60,7 @@ public final class KustoClientInstance {
         LOGGER.info("Using database : {}  & table {} to ingest logs", kustoLog4jConfig.dbName,
                 kustoLog4jConfig.tableName);
         ingestionProperties = new IngestionProperties(kustoLog4jConfig.dbName, kustoLog4jConfig.tableName);
+        ingestionProperties.setFlushImmediately(kustoLog4jConfig.flushImmediately);
         if (kustoLog4jConfig.logTableMapping != null && kustoLog4jConfig.mappingType != null
                 && !"".equals(kustoLog4jConfig.logTableMapping.trim()) &&
                 !"".equals(kustoLog4jConfig.mappingType.trim())) {
@@ -91,9 +92,11 @@ public final class KustoClientInstance {
     void ingestFile(String filePath) {
         Failsafe.with(ingestionRetryPolicy).onFailure(execution -> backOutFile(filePath)).onSuccess(execution -> {
             IngestionResult ingestionResult = (IngestionResult) execution.getResult();
-            ingestionResult.getIngestionStatusCollection().forEach(ingestionStatus -> LOGGER.warn("Ingestion status {} , Ingestion failure status {} , Ingestion error code {} ",
-                    ingestionStatus.getStatus(),
-                    ingestionStatus.getFailureStatus(), ingestionStatus.getErrorCode()));
+            ingestionResult.getIngestionStatusCollection()
+                    .forEach(ingestionStatus -> LOGGER.warn(
+                            "Ingestion status {} , Ingestion failure status {} , Ingestion error code {} ",
+                            ingestionStatus.getStatus(),
+                            ingestionStatus.getFailureStatus(), ingestionStatus.getErrorCode()));
         }).runAsync(() -> ingestLogs(filePath));
     }
 

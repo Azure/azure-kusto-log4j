@@ -17,8 +17,11 @@ class KustoLog4jConfig {
 
     final Integer backOffMaxMinutes;
 
+    final Boolean flushImmediately;
+
     KustoLog4jConfig(String clusterPath, String appId, String appKey, String appTenant, String dbName, String tableName,
-            String logTableMapping, String mappingType, String proxyUrl, Integer backOffMinMinutes,
+            String logTableMapping, String mappingType, Boolean flushImmediately, String proxyUrl,
+            Integer backOffMinMinutes,
             Integer backOffMaxMinutes) {
         this.clusterPath = clusterPath;
         this.appId = appId;
@@ -28,6 +31,7 @@ class KustoLog4jConfig {
         this.tableName = tableName;
         this.logTableMapping = logTableMapping;
         this.mappingType = mappingType;
+        this.flushImmediately = flushImmediately;
         this.proxyUrl = proxyUrl;
         this.backOffMaxMinutes = backOffMaxMinutes;
         this.backOffMinMinutes = backOffMinMinutes;

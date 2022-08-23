@@ -23,23 +23,34 @@ import com.microsoft.azure.kusto.data.exceptions.DataClientException;
 import com.microsoft.azure.kusto.data.exceptions.DataServiceException;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 public class KustoLog4jE2ETest {
 
     private static final Logger LOGGER;
-    private static final String databaseName = Objects.requireNonNull(System.getenv("dbName"), "dbName has to be defined as an env var");
-    private static final String ingestUrl = Objects.requireNonNull(System.getenv("clusterUrl"), "clusterUrl has to be defined as an env var");
-    private static final String appId = Objects.requireNonNull(System.getenv("appId"), "appId has to be defined as an env var");
-    private static final String appKey = Objects.requireNonNull(System.getenv("appKey"), "appKey has to be defined as an env var");
-    private static final String tenantId = Objects.requireNonNull(System.getenv("appTenant"), "appTenant has to be defined as an env var");
-    private static final String dmClusterPath = Objects.requireNonNull(System.getenv("engineUrl"),
-            "engineUrl has to be defined as an env var");
+    private static final String databaseName = Objects.requireNonNull(System.getenv("LOG4J2_ADX_DB_NAME"),
+            "LOG4J2_ADX_DB_NAME has to be defined as an env var");
+    private static final String ingestUrl = Objects.requireNonNull(System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"),
+            "LOG4J2_ADX_INGEST_CLUSTER_URL has to be defined as an env var");
+    private static final String appId = Objects.requireNonNull(System.getenv("LOG4J2_ADX_APP_ID"),
+            "LOG4J2_ADX_APP_ID has to be defined as an env var");
+    private static final String appKey = Objects.requireNonNull(System.getenv("LOG4J2_ADX_APP_KEY"),
+            "LOG4J2_ADX_APP_KEY has to be defined as an env var");
+    private static final String tenantId = Objects.requireNonNull(System.getenv("LOG4J2_ADX_TENANT_ID"),
+            "LOG4J2_ADX_TENANT_ID has to be defined as an env var");
+    private static final String dmClusterPath = Objects.requireNonNull(System.getenv("LOG4J2_ADX_ENGINE_URL"),
+            "LOG4J2_ADX_ENGINE_URL has to be defined as an env var");
     private static final String log4jCsvTableName = String.format("log4jcsv_%d", System.currentTimeMillis());
+
+    private static final String fileNameAttribute = String.format("%s%s", System.getProperty("java.io.tmpdir"), "rolling.log");
+    private static final String filePatternAttribute = String.format("%s%s%s%s", System.getProperty("java.io.tmpdir"), "archive", File.separator,
+            "rolling-%d{MM-dd-yy-hh-mm}-%i.log");
+
     private static ClientImpl queryClient;
 
     static {
@@ -78,33 +89,39 @@ public class KustoLog4jE2ETest {
 
     @AfterAll
     public static void tearDown() {
-        try {
+        Path archiveDirectory = Paths.get(filePatternAttribute).getParent();
+        try (Stream<Path> paths = Files.walk(archiveDirectory)) {
             // queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
+            paths.map(Path::toFile).forEach(File::deleteOnExit);
+            File rollingFileToDelete = new File(fileNameAttribute);
+            rollingFileToDelete.deleteOnExit();
         } catch (Exception ex) {
-            Assertions.fail("Failed to drop table", ex);
+            LOGGER.error("Failed to run clean up tasks!", ex);
+            Assertions.fail("Failed to run clean up tasks!", ex);
         }
     }
 
     public static void configureLog4J() {
         ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
         builder.setStatusLevel(Level.INFO);
-        String tmpdir = System.getProperty("java.io.tmpdir");
         // create a rolling file appender
         ComponentBuilder<?> kustoStrategy = builder.newComponent("KustoStrategy").addAttribute("clusterPath", ingestUrl)
                 .addAttribute("appId", appId)
                 .addAttribute("appKey", appKey).addAttribute("appTenant", tenantId)
                 .addAttribute("dbName", databaseName)
-                .addAttribute("tableName", log4jCsvTableName);
+                .addAttribute("tableName", log4jCsvTableName)
+                .addAttribute("flushImmediately", "true");
         LayoutComponentBuilder csvPatternBuilder = builder.newLayout("CsvLogEventLayout").addAttribute("delimiter", ",")
                 .addAttribute("quoteMode", "ALL");
         ComponentBuilder<?> triggeringPolicy = builder.newComponent("Policies")
-                .addComponent(builder.newComponent("TimeBasedTriggeringPolicy").addAttribute("interval", 10)
-                        .addAttribute("modulate", true))
-                .addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "100 KB"));
+                // .addComponent(builder.newComponent("TimeBasedTriggeringPolicy").addAttribute("interval", 5)
+                // .addAttribute("modulate", true));
+                .addComponent(builder.newComponent("CronTriggeringPolicy").addAttribute("schedule", "0 0/1 * 1/1 * ? *")
+                        .addAttribute("evaluateOnStartup", true));
+        // .addComponent(builder.newComponent("SizeBasedTriggeringPolicy").addAttribute("size", "80 KB"));
         AppenderComponentBuilder appenderBuilder = builder.newAppender("rolling", "RollingFile")
-                .addAttribute("fileName", String.format("%s%s", tmpdir, "rolling.log"))
-                .addAttribute("filePattern", String.format("%s%s%s%s", tmpdir, "archive", File.separator,
-                        "rolling-%d{MM-dd-yy-hh-mm-ss}-%i.log"))
+                .addAttribute("fileName", fileNameAttribute)
+                .addAttribute("filePattern", filePatternAttribute)
                 .addComponent(kustoStrategy).add(csvPatternBuilder).addComponent(triggeringPolicy);
         builder.add(appenderBuilder);
         // create the new logger
@@ -112,11 +129,6 @@ public class KustoLog4jE2ETest {
                 builder.newLogger("ADXRollingFile", Level.INFO).add(builder.newAppenderRef("rolling"))
                         .addAttribute("additivity", false));
         builder.add(builder.newRootLogger(Level.INFO).add(builder.newAppenderRef("rolling")));
-        try {
-            builder.writeXmlConfiguration(System.out);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         Configurator.initialize(builder.build());
     }
 
@@ -125,21 +137,24 @@ public class KustoLog4jE2ETest {
         String logInfoMessage = "log4j info test";
         String logWarnMessage = "log4j warn test";
         String logErrorMessage = "log4j error test";
-        int maxLoops = 10000;
-        for (int i = 0; i < maxLoops; i++) {
-            LOGGER.info("{} - {}", i, logInfoMessage);
-            LOGGER.warn("{} - {}", i, logWarnMessage);
-            LOGGER.error(logErrorMessage, new RuntimeException(i + " - A Random exception"));
-        }
+        int maxLoops = 100;
         try {
-            Thread.sleep(2 * 60000);
+            for (int i = 0; i < maxLoops; i++) {
+                LOGGER.info("{} - {}", i, logInfoMessage);
+                LOGGER.warn("{} - {}", i, logWarnMessage);
+                LOGGER.error(logErrorMessage, new RuntimeException(i + " - A Random exception"));
+                Thread.sleep(5);
+            }
+            Thread.sleep(2 * 60_000);
             String[] levelsToCheck = new String[] {logInfoMessage, logWarnMessage, logErrorMessage};
             for (String logLevel : levelsToCheck) {
-                KustoOperationResult queryResults = queryClient.execute(databaseName,
-                        String.format("%s | where formattedmessage has '%s'| count", log4jCsvTableName, logLevel));
+                String queryToExecute = String.format("%s | where formattedmessage has '%s'| summarize dcount(formattedmessage)", log4jCsvTableName, logLevel);
+                KustoOperationResult queryResults = queryClient.execute(databaseName, queryToExecute);
                 KustoResultSetTable mainTableResult = queryResults.getPrimaryResults();
                 mainTableResult.next();
-                Assertions.assertEquals(maxLoops, mainTableResult.getInt(0),
+                int countsRetrieved = mainTableResult.getInt(0);
+                LOGGER.warn("Query {} yielded count {} ", queryToExecute, countsRetrieved);
+                Assertions.assertEquals(maxLoops, countsRetrieved,
                         String.format("For %s , counts did not match", logLevel));
             }
         } catch (InterruptedException | DataServiceException | DataClientException e) {

@@ -29,6 +29,8 @@ import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.apache.logging.log4j.status.StatusLogger;
 
+import static org.apache.logging.log4j.kusto.Constants.*;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.Objects;
@@ -47,6 +49,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
     private static final int MIN_WINDOW_SIZE = 1;
     private static final int DEFAULT_WINDOW_SIZE = 3;
     private static final int DEFAULT_BACKOFF_MIN_TIME_MINUTES = 1;
+    private static final Boolean DEFAULT_FLUSH_IMMEDIATELY = false;
     private static final int DEFAULT_BACKOFF_MAX_TIME_MINUTES = 60;
 
     protected KustoStrategy(int minIndex, int maxIndex, boolean useMax, int compressionLevel, StrSubstitutor subst,
@@ -82,6 +85,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             @PluginAttribute("tableName") final String tableName,
             @PluginAttribute("logTableMapping") final String logTableMapping,
             @PluginAttribute("mappingType") final String mappingType,
+            @PluginAttribute("flushImmediately") final String flushImmediately,
             @PluginAttribute("proxyUrl") final String proxyUrl,
             @PluginAttribute("backOffMinMinutes") String backOffMinMinutes,
             @PluginAttribute("backOffMaxMinutes") String backOffMaxMinutes,
@@ -91,9 +95,14 @@ public class KustoStrategy extends DefaultRolloverStrategy {
         Integer backOffMin = backOffMinMinutes != null && Objects.requireNonNull(backOffMinMinutes).trim().length() > 0
                 ? Integer.parseInt(backOffMinMinutes)
                 : DEFAULT_BACKOFF_MIN_TIME_MINUTES;
-        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterPath, "clusterPath"), getOrEnvVar(appId, "appId"),
-                getOrEnvVar(appKey, "appKey"), getOrEnvVar(appTenant, "appTenant"), dbName, tableName,
-                logTableMapping, mappingType,
+        boolean flushImmediatelyIngestion = flushImmediately != null && Objects.requireNonNull(flushImmediately).trim().length() > 0
+                ? Boolean.valueOf(flushImmediately)
+                : DEFAULT_FLUSH_IMMEDIATELY;
+        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterPath, LOG4J2_ADX_INGEST_CLUSTER_URL),
+                getOrEnvVar(appId, LOG4J2_ADX_APP_ID),
+                getOrEnvVar(appKey, LOG4J2_ADX_APP_KEY), getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID), dbName,
+                tableName,
+                logTableMapping, mappingType, flushImmediatelyIngestion,
                 proxyUrl, backOffMin, backOffMax);
         return new KustoStrategy(MIN_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, true, Deflater.DEFAULT_COMPRESSION,
                 config.getStrSubstitutor(),
