@@ -7,15 +7,20 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.microsoft.azure.kusto.ingest.exceptions.IngestionClientException;
+import com.microsoft.azure.kusto.ingest.exceptions.IngestionServiceException;
+
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.*;
 
+import dev.failsafe.RetryPolicy;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.temporal.ChronoUnit;
 
 class KustoFlushActionTest {
 
@@ -41,7 +46,7 @@ class KustoFlushActionTest {
     }
 
     @Test
-    void execute() {
+    void executeSuccess() {
         ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
         Mockito.doNothing().when(kustoClientInstance).ingestFile(fileNameCaptor.capture());
         try (MockedStatic<KustoClientInstance> staticSingleton = mockStatic(KustoClientInstance.class)) {
@@ -54,6 +59,32 @@ class KustoFlushActionTest {
             // on execute the file will be renamed
         } catch (IOException e) {
             fail("IOException performing ingestFile() test");
+        }
+    }
+
+    @Test
+    void executeFailure() throws IngestionClientException, IOException, IngestionServiceException {
+        String backedOutPath = String.format("%s%s%s%s", System.getProperty("java.io.tmpdir"), "backout", File.separator, "delegate-archive.log");
+        Path backoutFilePath = Paths.get(backedOutPath);
+        Files.deleteIfExists(backoutFilePath);
+        ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
+        kustoClientInstance.ingestionRetryPolicy = RetryPolicy.builder().handle(RuntimeException.class)
+                .withBackoff(100, 500, ChronoUnit.MILLIS)
+                .withMaxRetries(2)
+                .build();
+        Mockito.doCallRealMethod().when(kustoClientInstance).backOutFile(anyString());
+        Mockito.doCallRealMethod().when(kustoClientInstance).ingestFile(anyString());
+        Mockito.doThrow(new IngestionServiceException("An ingest exception occurred")).when(kustoClientInstance)
+                .ingestLogs(fileNameCaptor.capture());
+        try (MockedStatic<KustoClientInstance> staticSingleton = mockStatic(KustoClientInstance.class)) {
+            staticSingleton.when(KustoClientInstance::getInstance).thenReturn(kustoClientInstance);
+            kustoFlushAction.execute();
+            Thread.sleep(2_000);
+            assertTrue(Files.exists(backoutFilePath));
+            // Ingestion complete backed-out
+            assertTrue(kustoFlushAction.isComplete());
+        } catch (IOException | InterruptedException e) {
+            fail("IOException performing ingestFile() test", e);
         }
     }
 

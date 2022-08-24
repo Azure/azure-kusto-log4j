@@ -10,13 +10,17 @@ import com.microsoft.azure.kusto.ingest.IngestClient;
 import com.microsoft.azure.kusto.ingest.IngestClientFactory;
 import com.microsoft.azure.kusto.ingest.IngestionMapping;
 import com.microsoft.azure.kusto.ingest.IngestionProperties;
+import com.microsoft.azure.kusto.ingest.exceptions.IngestionClientException;
+import com.microsoft.azure.kusto.ingest.exceptions.IngestionServiceException;
 import com.microsoft.azure.kusto.ingest.result.IngestionResult;
 import com.microsoft.azure.kusto.ingest.source.StreamSourceInfo;
 
 import static com.microsoft.azure.kusto.ingest.IngestionMapping.IngestionMappingKind.CSV;
 import static com.microsoft.azure.kusto.ingest.IngestionMapping.IngestionMappingKind.JSON;
+import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 import dev.failsafe.Failsafe;
+import dev.failsafe.Fallback;
 import dev.failsafe.RetryPolicy;
 import java.io.File;
 import java.io.IOException;
@@ -31,19 +35,16 @@ public final class KustoClientInstance {
 
     private static final Logger LOGGER = StatusLogger.getLogger();
 
-    private static volatile RetryPolicy<Object> ingestionRetryPolicy;
-
     private static volatile KustoClientInstance instance;
-
     private final IngestClient ingestClient;
     private final IngestionProperties ingestionProperties;
+    RetryPolicy<Object> ingestionRetryPolicy;
 
     private KustoClientInstance(KustoLog4jConfig kustoLog4jConfig) throws URISyntaxException {
         ingestionRetryPolicy = RetryPolicy.builder().handle(Throwable.class)
                 .withBackoff(kustoLog4jConfig.backOffMinMinutes, kustoLog4jConfig.backOffMaxMinutes, ChronoUnit.MINUTES)
                 .withMaxRetries(3)
                 .build();
-
         ConnectionStringBuilder csb = "".equals(kustoLog4jConfig.appKey) || "".equals(kustoLog4jConfig.appTenant)
                 ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterPath,
                         kustoLog4jConfig.appId)
@@ -85,39 +86,46 @@ public final class KustoClientInstance {
         }
     }
 
-    public static KustoClientInstance getInstance() {
+    static KustoClientInstance getInstance() {
         return instance;
     }
 
     void ingestFile(String filePath) {
-        Failsafe.with(ingestionRetryPolicy).onFailure(execution -> backOutFile(filePath)).onSuccess(execution -> {
-            IngestionResult ingestionResult = (IngestionResult) execution.getResult();
-            ingestionResult.getIngestionStatusCollection()
-                    .forEach(ingestionStatus -> LOGGER.warn(
-                            "Ingestion status {} , Ingestion failure status {} , Ingestion error code {} ",
-                            ingestionStatus.getStatus(),
-                            ingestionStatus.getFailureStatus(), ingestionStatus.getErrorCode()));
-        }).runAsync(() -> ingestLogs(filePath));
+        Fallback<Object> fallback = Fallback.builder(() -> backOutFile(filePath)).withAsync().build();
+        Failsafe.with(ingestionRetryPolicy, fallback)
+                .onComplete(e -> {
+                    if (e.getResult() != null) {
+                        IngestionResult ingestionResult = (IngestionResult) e.getResult();
+                        ingestionResult.getIngestionStatusCollection()
+                                .forEach(ingestionStatus -> LOGGER.warn(
+                                        "Ingestion status {} , Ingestion failure status {} , Ingestion error code {} ",
+                                        ingestionStatus.getStatus(),
+                                        ingestionStatus.getFailureStatus(), ingestionStatus.getErrorCode()));
+
+                    } else if (e.getException() != null) {
+                        backOutFile(filePath);
+                    }
+                })
+                .get(() -> ingestLogs(filePath));
+
     }
 
-    private IngestionResult ingestLogs(String filePath) {
+    IngestionResult ingestLogs(String filePath) throws IngestionClientException, IngestionServiceException,
+            IOException {
         try (InputStream inputStream = Files.newInputStream(Paths.get(filePath))) {
             StreamSourceInfo streamSourceInfo = new StreamSourceInfo(inputStream);
             return ingestClient.ingestFromStream(streamSourceInfo, ingestionProperties);
-        } catch (Throwable ex) {
-            LOGGER.warn("Error ingesting data for filePath {} ", filePath, ex);
-            throw new RuntimeException(ex);
         }
     }
 
-    private void backOutFile(String filePath) {
+    void backOutFile(String filePath) {
         LOGGER.warn("Ingestion failed post retries for file {}. Attempting to move this file to backout", filePath);
         Path pathOfFile = Paths.get(filePath);
         String targetDirectory = String.format("%s%sbackout%s", pathOfFile.getParent(), File.separator, File.separator);
         String targetPath = String.format("%s%s", targetDirectory, pathOfFile.getFileName());
         try {
             Files.createDirectories(Paths.get(targetDirectory));
-            Files.move(pathOfFile, Paths.get(targetPath));
+            Files.move(pathOfFile, Paths.get(targetPath), REPLACE_EXISTING);
         } catch (IOException e) {
             LOGGER.error("Ingestion failed post retries for file {}. Backout failed for the file to path {}", filePath,
                     targetPath, e);
