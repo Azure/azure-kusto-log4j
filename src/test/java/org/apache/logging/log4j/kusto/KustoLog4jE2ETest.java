@@ -135,7 +135,7 @@ public class KustoLog4jE2ETest {
     }
 
     @Test
-    public void e2eLogsTest() {
+    void e2eLogsTest() {
         String logInfoMessage = "log4j info test";
         String logWarnMessage = "log4j warn test";
         String logErrorMessage = "log4j error test";

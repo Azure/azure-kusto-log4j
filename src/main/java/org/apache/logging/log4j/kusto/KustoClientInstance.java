@@ -32,12 +32,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class KustoClientInstance {
 
     private static final Logger LOGGER = StatusLogger.getLogger();
 
-    private static volatile KustoClientInstance instance;
+    private static final AtomicReference<KustoClientInstance> ATOMIC_INSTANCE = new AtomicReference<>();
     private final IngestClient ingestClient;
     private final IngestionProperties ingestionProperties;
     RetryPolicy<Object> ingestionRetryPolicy;
@@ -76,20 +77,20 @@ public final class KustoClientInstance {
     }
 
     static KustoClientInstance getInstance(KustoLog4jConfig kustoLog4jConfig) throws URISyntaxException {
-        KustoClientInstance result = instance;
+        KustoClientInstance result = ATOMIC_INSTANCE.get();
         if (result != null) {
             return result;
         }
         synchronized (KustoClientInstance.class) {
-            if (instance == null) {
-                instance = new KustoClientInstance(kustoLog4jConfig);
+            if (ATOMIC_INSTANCE.get() == null) {
+                ATOMIC_INSTANCE.set(new KustoClientInstance(kustoLog4jConfig));
             }
-            return instance;
+            return ATOMIC_INSTANCE.get();
         }
     }
 
     static KustoClientInstance getInstance() {
-        return instance;
+        return ATOMIC_INSTANCE.get();
     }
 
     void ingestFile(String filePath) {

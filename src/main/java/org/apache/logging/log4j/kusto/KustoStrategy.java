@@ -105,6 +105,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
      * @param manager
      * @return RolloverDescription
      */
+    @Override
     public RolloverDescription rollover(final RollingFileManager manager) {
         RolloverDescription rolloverDescription = super.rollover(manager);
         String path = "";

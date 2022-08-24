@@ -32,7 +32,7 @@ class KustoFlushAction extends AbstractAction {
     }
 
     @Override
-    public void close() {
+    public synchronized void close() {
         KustoClientInstance.getInstance().close();
         delegate.close();
     }
