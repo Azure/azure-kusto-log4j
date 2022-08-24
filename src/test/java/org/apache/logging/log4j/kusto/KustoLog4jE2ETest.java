@@ -53,8 +53,9 @@ public class KustoLog4jE2ETest {
             "LOG4J2_ADX_ENGINE_URL has to be defined as an env var");
     private static final String log4jCsvTableName = String.format("log4jcsv_%d", System.currentTimeMillis());
 
-    private static final String fileNameAttribute = String.format("%s%s", System.getProperty("java.io.tmpdir"), "rolling.log");
-    private static final String filePatternAttribute = String.format("%s%s%s%s", System.getProperty("java.io.tmpdir"), "archive", File.separator,
+    private static final String fileNameAttribute = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "rolling.log");
+    private static final String filePatternAttribute = String.format("%s%s%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "archive",
+            File.separator,
             "rolling-%d{MM-dd-yy-hh-mm}-%i.log");
 
     private static ClientImpl queryClient;

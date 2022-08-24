@@ -30,8 +30,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 class KustoFlushActionTest {
 
-    private static final String FILE_SOURCE_ATTRIBUTE = String.format("%s%s", System.getProperty("java.io.tmpdir"), "delegate.log");
-    private static final String FILE_TARGET_ATTRIBUTE = String.format("%s%s", System.getProperty("java.io.tmpdir"), "delegate-archive.log");
+    private static final String FILE_SOURCE_ATTRIBUTE = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "delegate.log");
+    private static final String FILE_TARGET_ATTRIBUTE = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "delegate-archive.log");
 
     private static final FileRenameAction DELEGATE_RENAME_ACTION = new FileRenameAction(new File(FILE_SOURCE_ATTRIBUTE),
             new File(FILE_TARGET_ATTRIBUTE), true);
@@ -47,7 +47,7 @@ class KustoFlushActionTest {
             Files.copy(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "delegate.log"), Paths.get(FILE_SOURCE_ATTRIBUTE),
                     REPLACE_EXISTING);
         } catch (IOException e) {
-            fail("Cannot copy delegate.log file for test , all tests will fail subsequently",e);
+            fail("Cannot copy delegate.log file for test , all tests will fail subsequently", e);
         }
     }
 
@@ -70,7 +70,7 @@ class KustoFlushActionTest {
 
     @Test
     void executeFailure() throws IngestionClientException, IOException, IngestionServiceException {
-        String backedOutPath = String.format("%s%s%s%s", System.getProperty("java.io.tmpdir"), "backout", File.separator,
+        String backedOutPath = String.format("%s%s%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "backout", File.separator,
                 "delegate-archive.log");
         Path backoutFilePath = Paths.get(backedOutPath);
         Files.deleteIfExists(backoutFilePath);

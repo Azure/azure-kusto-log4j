@@ -16,8 +16,8 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 
 class KustoRolloverDescriptionTest {
-    private static final String FILE_SOURCE_ATTRIBUTE = String.format("%s%s", System.getProperty("java.io.tmpdir"), "delegate.log");
-    private static final String FILE_TARGET_ATTRIBUTE = String.format("%s%s", System.getProperty("java.io.tmpdir"), "delegate-archive.log");
+    private static final String FILE_SOURCE_ATTRIBUTE = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "delegate.log");
+    private static final String FILE_TARGET_ATTRIBUTE = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "delegate-archive.log");
 
     private static final FileRenameAction DELEGATE_RENAME_ACTION = new FileRenameAction(new File(FILE_SOURCE_ATTRIBUTE),
             new File(FILE_TARGET_ATTRIBUTE), true);
