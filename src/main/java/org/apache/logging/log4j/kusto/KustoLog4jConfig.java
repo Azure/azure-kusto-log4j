@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 package org.apache.logging.log4j.kusto;
 
 class KustoLog4jConfig {
