@@ -20,6 +20,7 @@ jobs:
         java-version: '8'
         distribution: 'temurin'
         cache: maven
+    - name: Build & with Maven
       env:
         LOG4J2_ADX_DB_NAME: ${{ secrets.LOG4J2_ADX_DB_NAME }}
         LOG4J2_ADX_ENGINE_URL: ${{ secrets.LOG4J2_ADX_ENGINE_URL }}
@@ -27,5 +28,4 @@ jobs:
         LOG4J2_ADX_INGEST_CLUSTER_URL: ${{ secrets.LOG4J2_ADX_INGEST_CLUSTER_URL }}
         LOG4J2_ADX_APP_ID: ${{ secrets.LOG4J2_ADX_APP_ID }}
         LOG4J2_ADX_APP_KEY: ${{ secrets.LOG4J2_ADX_APP_KEY }}
-    - name: Build & with Maven
       run: mvn -B test --file pom.xml
