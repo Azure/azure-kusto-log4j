@@ -81,10 +81,10 @@ public class KustoLog4jE2ETest {
             // To be sure drop the table
             queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
             // Create the table with columns
-            String tableColumns = new String(Files.readAllBytes(Paths.get("src/test/resources/", "csv_columns.txt")));
+            String tableColumns = new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "csv_columns.txt")));
             queryClient.execute(databaseName, String.format(".create table %s %s", log4jCsvTableName, tableColumns));
             // create a policy for batching
-            String ingestionPolicy = new String(Files.readAllBytes(Paths.get("src/test/resources/", "table_policy.txt")));
+            String ingestionPolicy = new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "table_policy.txt")));
             queryClient.execute(databaseName,
                     String.format(".alter table %s policy ingestionbatching @'%s'", log4jCsvTableName,
                             ingestionPolicy));

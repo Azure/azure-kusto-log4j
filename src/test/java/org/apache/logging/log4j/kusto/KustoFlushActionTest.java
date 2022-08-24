@@ -44,7 +44,7 @@ class KustoFlushActionTest {
         kustoClientInstance = mock(KustoClientInstance.class);
         kustoFlushAction = new KustoFlushAction(DELEGATE_RENAME_ACTION, FILE_TARGET_ATTRIBUTE);
         try {
-            Files.copy(Paths.get("src/test/resources/delegate.log"), Paths.get(FILE_SOURCE_ATTRIBUTE),
+            Files.copy(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "delegate.log"), Paths.get(FILE_SOURCE_ATTRIBUTE),
                     REPLACE_EXISTING);
         } catch (IOException e) {
             fail("Cannot copy delegate.log file for test , all tests will fail subsequently");
