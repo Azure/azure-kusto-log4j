@@ -47,7 +47,7 @@ class KustoFlushActionTest {
             Files.copy(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "delegate.log"), Paths.get(FILE_SOURCE_ATTRIBUTE),
                     REPLACE_EXISTING);
         } catch (IOException e) {
-            fail("Cannot copy delegate.log file for test , all tests will fail subsequently");
+            fail("Cannot copy delegate.log file for test , all tests will fail subsequently",e);
         }
     }
 
