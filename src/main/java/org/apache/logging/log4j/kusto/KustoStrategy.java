@@ -59,8 +59,12 @@ public class KustoStrategy extends DefaultRolloverStrategy {
      * @param tableName
      * @param logTableMapping
      * @param mappingType
+     * @param flushImmediately
+     * @param proxyUrl
+     * @param backOffMinMinutes
+     * @param backOffMaxMinutes
      * @param config
-     * @return KustoStrategy
+     * @return
      */
     @PluginFactory
     public static KustoStrategy createStrategy(@PluginAttribute("clusterPath") final String clusterPath,

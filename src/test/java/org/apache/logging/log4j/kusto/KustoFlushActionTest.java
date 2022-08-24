@@ -13,6 +13,7 @@ import com.microsoft.azure.kusto.ingest.exceptions.IngestionClientException;
 import com.microsoft.azure.kusto.ingest.exceptions.IngestionServiceException;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -23,6 +24,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.temporal.ChronoUnit;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 class KustoFlushActionTest {
 
@@ -66,7 +70,8 @@ class KustoFlushActionTest {
 
     @Test
     void executeFailure() throws IngestionClientException, IOException, IngestionServiceException {
-        String backedOutPath = String.format("%s%s%s%s", System.getProperty("java.io.tmpdir"), "backout", File.separator, "delegate-archive.log");
+        String backedOutPath = String.format("%s%s%s%s", System.getProperty("java.io.tmpdir"), "backout", File.separator,
+                "delegate-archive.log");
         Path backoutFilePath = Paths.get(backedOutPath);
         Files.deleteIfExists(backoutFilePath);
         ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
@@ -81,11 +86,12 @@ class KustoFlushActionTest {
         try (MockedStatic<KustoClientInstance> staticSingleton = mockStatic(KustoClientInstance.class)) {
             staticSingleton.when(KustoClientInstance::getInstance).thenReturn(kustoClientInstance);
             kustoFlushAction.execute();
-            Thread.sleep(2_000);
+            AtomicBoolean isCompleted = new AtomicBoolean();
+            await().atMost(5, TimeUnit.SECONDS).until(isActionCompleted());
             assertTrue(Files.exists(backoutFilePath));
             // Ingestion complete backed-out
             assertTrue(kustoFlushAction.isComplete());
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             fail("IOException performing ingestFile() test", e);
         }
     }
@@ -99,5 +105,9 @@ class KustoFlushActionTest {
             staticSingleton.verify(KustoClientInstance::getInstance);
             assertFalse(kustoFlushAction.isComplete());
         }
+    }
+
+    private Callable<Boolean> isActionCompleted() {
+        return () -> kustoFlushAction.isComplete();
     }
 }

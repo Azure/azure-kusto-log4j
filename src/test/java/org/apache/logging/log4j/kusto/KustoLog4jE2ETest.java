@@ -24,12 +24,16 @@ import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder;
 import com.microsoft.azure.kusto.data.exceptions.DataClientException;
 import com.microsoft.azure.kusto.data.exceptions.DataServiceException;
 
+import static org.awaitility.Awaitility.await;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public class KustoLog4jE2ETest {
@@ -146,9 +150,8 @@ public class KustoLog4jE2ETest {
                 LOGGER.warn("{} - {}", i, logWarnMessage);
                 LOGGER.error(String.format("%s-%s", logErrorMessage, i),
                         new RuntimeException(i + " - A Random exception"));
-                Thread.sleep(5);
             }
-            Thread.sleep(1 * 60_000);
+            await().atMost(90, TimeUnit.SECONDS).until(ingestionCompleted());
             String[] levelsToCheck = new String[] {logInfoMessage, logWarnMessage, logErrorMessage};
             for (String logLevel : levelsToCheck) {
                 String queryToExecute = String.format("%s | where formattedmessage has '%s'| summarize dcount(formattedmessage)",
@@ -162,8 +165,20 @@ public class KustoLog4jE2ETest {
                         String.format("For %s , counts did not match", logLevel));
 
             }
-        } catch (InterruptedException | DataServiceException | DataClientException e) {
+        } catch (DataServiceException | DataClientException e) {
             Assertions.fail("Error querying counts from table", e);
         }
+    }
+
+    private Callable<Boolean> ingestionCompleted() {
+        return () -> {
+            String queryToExecute = String.format("%s | where formattedmessage == '99 - %s'|count",
+                    log4jCsvTableName, "log4j info test");
+            KustoOperationResult queryResults = queryClient.execute(databaseName, queryToExecute);
+            KustoResultSetTable mainTableResult = queryResults.getPrimaryResults();
+            mainTableResult.next();
+            int countsRetrieved = mainTableResult.getInt(0);
+            return countsRetrieved == 1;
+        };
     }
 }
