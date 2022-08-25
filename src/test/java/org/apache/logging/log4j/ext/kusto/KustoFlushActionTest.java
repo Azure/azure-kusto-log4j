@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package org.apache.logging.log4j.kusto;
+package org.apache.logging.log4j.ext.kusto;
 
 import org.apache.logging.log4j.core.appender.rolling.action.FileRenameAction;
 import org.junit.jupiter.api.BeforeEach;

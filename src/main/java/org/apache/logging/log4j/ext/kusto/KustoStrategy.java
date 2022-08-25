@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package org.apache.logging.log4j.kusto;
+package org.apache.logging.log4j.ext.kusto;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.appender.rolling.DefaultRolloverStrategy;
@@ -14,8 +14,6 @@ import org.apache.logging.log4j.core.config.plugins.PluginConfiguration;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.apache.logging.log4j.status.StatusLogger;
-
-import static org.apache.logging.log4j.kusto.Constants.*;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -88,9 +86,9 @@ public class KustoStrategy extends DefaultRolloverStrategy {
         boolean flushImmediatelyIngestion = flushImmediately != null && Objects.requireNonNull(flushImmediately).trim().length() > 0
                 ? Boolean.valueOf(flushImmediately)
                 : DEFAULT_FLUSH_IMMEDIATELY;
-        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterPath, LOG4J2_ADX_INGEST_CLUSTER_URL),
-                getOrEnvVar(appId, LOG4J2_ADX_APP_ID),
-                getOrEnvVar(appKey, LOG4J2_ADX_APP_KEY), getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID), dbName,
+        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterPath, Constants.LOG4J2_ADX_INGEST_CLUSTER_URL),
+                getOrEnvVar(appId, Constants.LOG4J2_ADX_APP_ID),
+                getOrEnvVar(appKey, Constants.LOG4J2_ADX_APP_KEY), getOrEnvVar(appTenant, Constants.LOG4J2_ADX_TENANT_ID), dbName,
                 tableName,
                 logTableMapping, mappingType, flushImmediatelyIngestion,
                 proxyUrl, backOffMin, backOffMax);

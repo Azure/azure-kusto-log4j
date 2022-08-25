@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package org.apache.logging.log4j.kusto;
+package org.apache.logging.log4j.ext.kusto;
 
 public class Constants {
     public static final String LOG4J2_ADX_APP_ID = "LOG4J2_ADX_APP_ID";
