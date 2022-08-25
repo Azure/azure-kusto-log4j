@@ -3,12 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.apache.logging.log4j</groupId>
     <version>2.18.0</version>
-    <artifactId>log4j-kusto</artifactId>
+    <artifactId>azure-kusto-log4j</artifactId>
     <name>Apache Log4j Kusto</name>
     <description>Kusto appender for Log4j.</description>
     <properties>
         <docLabel>Kusto Documentation</docLabel>
-        <projectDir>/log4j-kusto</projectDir>
+        <projectDir>/azure-kusto-log4j</projectDir>
         <module.name>org.apache.logging.log4j.kusto</module.name>
         <maven.doap.skip>true</maven.doap.skip>
         <awaitility.version>4.2.0</awaitility.version>
