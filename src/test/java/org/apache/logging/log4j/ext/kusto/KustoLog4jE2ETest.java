@@ -13,10 +13,8 @@ import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFact
 import org.apache.logging.log4j.core.config.builder.api.LayoutComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.HttpProxyServerBootstrap;
@@ -32,8 +30,6 @@ import com.microsoft.azure.kusto.data.exceptions.DataServiceException;
 import static org.awaitility.Awaitility.await;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,7 +41,6 @@ import java.util.stream.Stream;
 
 public class KustoLog4jE2ETest {
 
-    private static Logger LOGGER;
     private static final String databaseName = Objects.requireNonNull(System.getenv("LOG4J2_ADX_DB_NAME"),
             "LOG4J2_ADX_DB_NAME has to be defined as an env var");
     private static final String ingestUrl = Objects.requireNonNull(System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"),
@@ -59,17 +54,14 @@ public class KustoLog4jE2ETest {
     private static final String dmClusterPath = Objects.requireNonNull(System.getenv("LOG4J2_ADX_ENGINE_URL"),
             "LOG4J2_ADX_ENGINE_URL has to be defined as an env var");
     private static final String log4jCsvTableName = String.format("log4jcsv_%d", System.currentTimeMillis());
-
     private static final String fileNameAttribute = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "rolling.log");
     private static final String filePatternAttribute = String.format("%s%s%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "archive",
             File.separator,
             "rolling-%d{MM-dd-yy-hh-mm}-%i.log");
-
+    private static Logger LOGGER;
     private static ClientImpl queryClient;
 
     private static HttpProxyServer proxy;
-
-
 
     @BeforeAll
     public static void setUp() {
@@ -91,16 +83,21 @@ public class KustoLog4jE2ETest {
             // To be sure drop the table
             queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
             // Create the table with columns
-            String tableColumns = new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "csv_columns.txt")));
+            String tableColumns = new String(Files.readAllBytes(
+                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "csv_columns.txt")));
             queryClient.execute(databaseName, String.format(".create table %s %s", log4jCsvTableName, tableColumns));
             // create a policy for batching
-            String ingestionPolicy = new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "table_policy.txt")));
+            String ingestionPolicy = new String(Files.readAllBytes(
+                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "table_policy.txt")));
             queryClient.execute(databaseName,
                     String.format(".alter table %s policy ingestionbatching @'%s'", log4jCsvTableName,
                             ingestionPolicy));
-            //create a mapping
-            String tableCsvMapping = new String(Files.readAllBytes(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "mappings.txt")));
-            queryClient.execute(databaseName, String.format(".create table %s ingestion csv mapping '%s_mapping' '%s' ", log4jCsvTableName,log4jCsvTableName, tableCsvMapping));
+            // create a mapping
+            String tableCsvMapping = new String(Files.readAllBytes(
+                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "mappings.txt")));
+            queryClient.execute(databaseName,
+                    String.format(".create table %s ingestion csv mapping '%s_mapping' '%s' ", log4jCsvTableName,
+                            log4jCsvTableName, tableCsvMapping));
         } catch (Exception ex) {
             Assertions.fail("Failed to drop and create new table", ex);
         }
@@ -131,8 +128,9 @@ public class KustoLog4jE2ETest {
                 .addAttribute("appKey", appKey).addAttribute("appTenant", tenantId)
                 .addAttribute("dbName", databaseName)
                 .addAttribute("tableName", log4jCsvTableName)
-                .addAttribute("proxyUrl", String.format("http://%s:%d",proxy.getListenAddress().getHostName(),proxy.getListenAddress().getPort()))
-                .addAttribute("logTableMapping", String.format("%s_mapping",log4jCsvTableName))
+                .addAttribute("proxyUrl", String.format("http://%s:%d", proxy.getListenAddress().getHostName(),
+                        proxy.getListenAddress().getPort()))
+                .addAttribute("logTableMapping", String.format("%s_mapping", log4jCsvTableName))
                 .addAttribute("flushImmediately", "true");
         LayoutComponentBuilder csvPatternBuilder = builder.newLayout("CsvLogEventLayout").addAttribute("delimiter", ",")
                 .addAttribute("quoteMode", "ALL");
@@ -153,6 +151,18 @@ public class KustoLog4jE2ETest {
                         .addAttribute("additivity", false));
         builder.add(builder.newRootLogger(Level.INFO).add(builder.newAppenderRef("rolling")));
         Configurator.initialize(builder.build());
+    }
+
+    private static void setupAndStartProxy() {
+        HttpProxyServerBootstrap httpProxyServerBootstrap = DefaultHttpProxyServer.bootstrap()
+                .withAllowLocalOnly(true) // only run on localhost
+                .withAuthenticateSslClients(false); // we aren't checking client certs
+        // Start the proxy server
+        proxy = httpProxyServerBootstrap.start();
+    }
+
+    private static void shutdownProxy() {
+        proxy.stop();
     }
 
     @Test
@@ -184,18 +194,6 @@ public class KustoLog4jE2ETest {
         } catch (DataServiceException | DataClientException e) {
             Assertions.fail("Error querying counts from table", e);
         }
-    }
-
-    private static void setupAndStartProxy()  {
-        HttpProxyServerBootstrap httpProxyServerBootstrap = DefaultHttpProxyServer.bootstrap()
-                .withAllowLocalOnly(true) // only run on localhost
-                .withAuthenticateSslClients(false); // we aren't checking client certs
-        // Start the proxy server
-        proxy = httpProxyServerBootstrap.start();
-    }
-
-    private static  void shutdownProxy()  {
-        proxy.stop();
     }
 
     private Callable<Boolean> ingestionCompleted() {

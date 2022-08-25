@@ -14,30 +14,32 @@ with a configured time window
 
 Adding appender to log4j.properties
 ----------------------
-The key parameters for rolling file are as documented in the [Rolling file log4j configuration](https://logging.apache.org/log4j/2.x/manual/appenders.html#RollingFileAppender)
+The key parameters for rolling file are as documented in
+the [Rolling file log4j configuration](https://logging.apache.org/log4j/2.x/manual/appenders.html#RollingFileAppender)
 
 - fileName : The file name where the log files will be written locally (e.g C:/logs/logs.log)
 - filePattern : The rolled over file name with pattern (e.g C:/logs/logs-%d{yyyy-MM-dd-hh-mm-ss}-%i.log)
 
-Configurations for using the Kusto log4j appender is as follows 
+Configurations for using the Kusto log4j appender is as follows
 
 - KustoStrategy
-    - **clusterPath**: Ingest URL.Configured using environment variable **LOG4J2_ADX_INGEST_CLUSTER_URL** 
-    - **appId**: Service principal application id.Configured using environment variable **LOG4J2_ADX_APP_ID**  
-    - **appKey**: Service principal application secret.Configured using environment variable **LOG4J2_ADX_APP_KEY**  
-    - **appTenant**: Tenant for the Service principal.Configured using environment variable **LOG4J2_ADX_TENANT_ID**  
-    - **dbName**: Database name.Configured using environment variable **LOG4J2_ADX_DB_NAME**  
-    - **tableName**: Table name for ingesting the logs   
-    - **logTableMapping**: Mapping defined in the database to map the log data  
-    - **mappingType**: json (or) csv is currently supported. Defaults to **_csv_**  
-    - **flushImmediately**: Boolean indicator to flush the logs immediately. Defaults to **_false_**. Note that making this true may cause additional load on the cluster
+    - **clusterPath**: Ingest URL.Configured using environment variable **LOG4J2_ADX_INGEST_CLUSTER_URL**
+    - **appId**: Service principal application id.Configured using environment variable **LOG4J2_ADX_APP_ID**
+    - **appKey**: Service principal application secret.Configured using environment variable **LOG4J2_ADX_APP_KEY**
+    - **appTenant**: Tenant for the Service principal.Configured using environment variable **LOG4J2_ADX_TENANT_ID**
+    - **dbName**: Database name.Configured using environment variable **LOG4J2_ADX_DB_NAME**
+    - **tableName**: Table name for ingesting the logs
+    - **logTableMapping**: Mapping defined in the database to map the log data
+    - **mappingType**: json (or) csv is currently supported. Defaults to **_csv_**
+    - **flushImmediately**: Boolean indicator to flush the logs immediately. Defaults to **_false_**. Note that making
+      this true may cause additional load on the cluster
     - **proxyUrl**: Proxy url in case application is hosted behind a proxy
 
-- To attempt retries in case of ingestion failures, retransmission is attempted with the following configuration. 3 retries are attempted to ingest the logs
+- To attempt retries in case of ingestion failures, retransmission is attempted with the following configuration. 3
+  retries are attempted to ingest the logs
 
-  - **backOffMinMinutes**: Min minutes to back off in the event that ingestion fails
-  - **backOffMaxMinutes**: Max minutes to back off in the event that ingestion fails
-
+    - **backOffMinMinutes**: Min minutes to back off in the event that ingestion fails
+    - **backOffMaxMinutes**: Max minutes to back off in the event that ingestion fails
 
 ```xml
 <Configuration status="WARN">
@@ -77,6 +79,7 @@ Configurations for using the Kusto log4j appender is as follows
 How to build:
 ----------------------
 In power-shell the following can be set
+
 ```sh
 $env:LOG4J2_ADX_DB_NAME="<db-name>"
 $env:LOG4J2_ADX_ENGINE_URL="https://<cluster>.kusto.windows.net"
@@ -85,6 +88,7 @@ $env:LOG4J2_ADX_INGEST_CLUSTER_URL="https://ingest-<cluster>.kusto.windows.net"
 $env:LOG4J2_ADX_APP_ID="<app-id>"
 $env:LOG4J2_ADX_APP_KEY="<app-key>" 
 ```
+
 followed by
 
 ```mvn clean package```

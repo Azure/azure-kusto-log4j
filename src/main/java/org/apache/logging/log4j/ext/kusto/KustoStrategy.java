@@ -88,7 +88,8 @@ public class KustoStrategy extends DefaultRolloverStrategy {
                 : DEFAULT_FLUSH_IMMEDIATELY;
         KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterPath, Constants.LOG4J2_ADX_INGEST_CLUSTER_URL),
                 getOrEnvVar(appId, Constants.LOG4J2_ADX_APP_ID),
-                getOrEnvVar(appKey, Constants.LOG4J2_ADX_APP_KEY), getOrEnvVar(appTenant, Constants.LOG4J2_ADX_TENANT_ID), dbName,
+                getOrEnvVar(appKey, Constants.LOG4J2_ADX_APP_KEY),
+                getOrEnvVar(appTenant, Constants.LOG4J2_ADX_TENANT_ID), dbName,
                 tableName,
                 logTableMapping, mappingType, flushImmediatelyIngestion,
                 proxyUrl, backOffMin, backOffMax);

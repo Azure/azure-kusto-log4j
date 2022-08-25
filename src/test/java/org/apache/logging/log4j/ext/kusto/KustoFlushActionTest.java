@@ -44,7 +44,8 @@ class KustoFlushActionTest {
         kustoClientInstance = mock(KustoClientInstance.class);
         kustoFlushAction = new KustoFlushAction(DELEGATE_RENAME_ACTION, FILE_TARGET_ATTRIBUTE);
         try {
-            Files.copy(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "delegate.log"), Paths.get(FILE_SOURCE_ATTRIBUTE),
+            Files.copy(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "delegate.log"),
+                    Paths.get(FILE_SOURCE_ATTRIBUTE),
                     REPLACE_EXISTING);
         } catch (IOException e) {
             fail("Cannot copy delegate.log file for test , all tests will fail subsequently", e);
@@ -70,7 +71,8 @@ class KustoFlushActionTest {
 
     @Test
     void executeFailure() throws IngestionClientException, IOException, IngestionServiceException {
-        String backedOutPath = String.format("%s%s%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "backout", File.separator,
+        String backedOutPath = String.format("%s%s%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "backout",
+                File.separator,
                 "delegate-archive.log");
         Path backoutFilePath = Paths.get(backedOutPath);
         Files.deleteIfExists(backoutFilePath);
