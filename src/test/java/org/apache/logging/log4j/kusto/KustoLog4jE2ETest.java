@@ -102,6 +102,7 @@ public class KustoLog4jE2ETest {
             paths.map(Path::toFile).forEach(File::deleteOnExit);
             File rollingFileToDelete = new File(fileNameAttribute);
             rollingFileToDelete.deleteOnExit();
+            KustoClientInstance.getInstance().close();
         } catch (Exception ex) {
             LOGGER.error("Failed to run clean up tasks!", ex);
             Assertions.fail("Failed to run clean up tasks!", ex);
