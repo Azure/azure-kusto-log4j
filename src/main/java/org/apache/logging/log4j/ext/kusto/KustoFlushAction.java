@@ -24,7 +24,7 @@ class KustoFlushAction extends AbstractAction {
     public boolean execute() throws IOException {
         boolean execute = delegate.execute();
         if (execute) {
-            KustoClientInstance.getInstance().ingestFile(fileName);
+            KustoClientInstance.getInstance().ingestRolledFile(fileName);
         }
         // reaches here on completion , else IOException gets thrown
         ingestComplete = true;

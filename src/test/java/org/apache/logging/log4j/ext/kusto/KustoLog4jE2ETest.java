@@ -5,6 +5,7 @@ package org.apache.logging.log4j.ext.kusto;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
 import org.apache.logging.log4j.core.config.builder.api.ComponentBuilder;
@@ -63,6 +64,8 @@ public class KustoLog4jE2ETest {
 
     private static HttpProxyServer proxy;
 
+    private static LoggerContext context;
+
     @BeforeAll
     public static void setUp() {
         setupAndStartProxy();
@@ -105,6 +108,7 @@ public class KustoLog4jE2ETest {
 
     @AfterAll
     public static void tearDown() {
+        context.close();
         Path archiveDirectory = Paths.get(filePatternAttribute).getParent();
         try (Stream<Path> paths = Files.walk(archiveDirectory)) {
             queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
@@ -127,6 +131,8 @@ public class KustoLog4jE2ETest {
                 .addAttribute("appId", appId)
                 .addAttribute("appKey", appKey).addAttribute("appTenant", tenantId)
                 .addAttribute("dbName", databaseName)
+                .addAttribute("backOffMinSeconds", 5)
+                .addAttribute("backOffMaxSeconds", 10)
                 .addAttribute("tableName", log4jCsvTableName)
                 .addAttribute("proxyUrl", String.format("http://%s:%d", proxy.getListenAddress().getHostName(),
                         proxy.getListenAddress().getPort()))
@@ -150,7 +156,7 @@ public class KustoLog4jE2ETest {
                 builder.newLogger("ADXRollingFile", Level.INFO).add(builder.newAppenderRef("rolling"))
                         .addAttribute("additivity", false));
         builder.add(builder.newRootLogger(Level.INFO).add(builder.newAppenderRef("rolling")));
-        Configurator.initialize(builder.build());
+        context = Configurator.initialize(builder.build());
     }
 
     private static void setupAndStartProxy() {
@@ -171,6 +177,7 @@ public class KustoLog4jE2ETest {
         String logWarnMessage = "log4j warn test";
         String logErrorMessage = "log4j error test";
         int maxLoops = 100;
+        // shutdownProxy();
         try {
             for (int i = 0; i < maxLoops; i++) {
                 LOGGER.info("{} - {}", i, logInfoMessage);

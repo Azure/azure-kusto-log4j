@@ -20,18 +20,18 @@ import java.net.URISyntaxException;
 import java.util.Objects;
 import java.util.zip.Deflater;
 
-/**
- * dfsdgsd.
+/*
+  The KustoStrategy that extends RolloverStrategy where rolled file will be ingested into ADX tables
  */
 @Plugin(name = "KustoStrategy", category = "Core", printObject = true)
 public class KustoStrategy extends DefaultRolloverStrategy {
 
     /**
-     * A logger
+     * A logger that logs data into Kusto
      */
     protected static final Logger LOGGER = StatusLogger.getLogger();
-    private static final int MIN_WINDOW_SIZE = 1;
-    private static final int DEFAULT_WINDOW_SIZE = 3;
+    private static final int MIN_BACKOFF_TIME_SECONDS = 60;
+    private static final int MAX_BACKOFF_TIME_SECONDS = 3 * 60;
     private static final int DEFAULT_BACKOFF_MIN_TIME_MINUTES = 1;
     private static final Boolean DEFAULT_FLUSH_IMMEDIATELY = false;
     private static final int DEFAULT_BACKOFF_MAX_TIME_MINUTES = 60;
@@ -49,20 +49,20 @@ public class KustoStrategy extends DefaultRolloverStrategy {
     }
 
     /**
-     * @param clusterPath
-     * @param appId
-     * @param appKey
-     * @param appTenant
-     * @param dbName
-     * @param tableName
-     * @param logTableMapping
-     * @param mappingType
-     * @param flushImmediately
-     * @param proxyUrl
-     * @param backOffMinMinutes
-     * @param backOffMaxMinutes
-     * @param config
-     * @return
+     * @param clusterPath       The clusterPath to which ingestion happens
+     * @param appId             The client app id for authentication
+     * @param appKey            The client app secret for authentication
+     * @param appTenant         The directory where the app id is created
+     * @param dbName            The database name where the log table is
+     * @param tableName         The table to ingest data into
+     * @param logTableMapping   The mapping for the log table
+     * @param mappingType       JSON or CSV mapping type
+     * @param flushImmediately  If the ingestion flush happens immediately
+     * @param proxyUrl          If the application is behind a proxy , the proxy URL
+     * @param backOffMinSeconds The lower bound minutes to wait before retry of ingestion
+     * @param backOffMaxSeconds The upper bound minutes to wait for retry before giving up
+     * @param config            The config and policy used for the logging
+     * @return KustoStrategy that ingests the rolling files created
      */
     @PluginFactory
     public static KustoStrategy createStrategy(@PluginAttribute("clusterPath") final String clusterPath,
@@ -75,13 +75,13 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             @PluginAttribute("mappingType") final String mappingType,
             @PluginAttribute("flushImmediately") final String flushImmediately,
             @PluginAttribute("proxyUrl") final String proxyUrl,
-            @PluginAttribute("backOffMinMinutes") String backOffMinMinutes,
-            @PluginAttribute("backOffMaxMinutes") String backOffMaxMinutes,
+            @PluginAttribute("backOffMinSeconds") String backOffMinSeconds,
+            @PluginAttribute("backOffMaxSeconds") String backOffMaxSeconds,
             @PluginConfiguration final Configuration config) {
-        Integer backOffMax = backOffMaxMinutes != null && backOffMaxMinutes.trim().length() > 0 ? Integer.parseInt(backOffMaxMinutes)
+        Integer backOffMax = backOffMaxSeconds != null && backOffMaxSeconds.trim().length() > 0 ? Integer.parseInt(backOffMaxSeconds)
                 : DEFAULT_BACKOFF_MAX_TIME_MINUTES;
-        Integer backOffMin = backOffMinMinutes != null && Objects.requireNonNull(backOffMinMinutes).trim().length() > 0
-                ? Integer.parseInt(backOffMinMinutes)
+        Integer backOffMin = backOffMinSeconds != null && Objects.requireNonNull(backOffMinSeconds).trim().length() > 0
+                ? Integer.parseInt(backOffMinSeconds)
                 : DEFAULT_BACKOFF_MIN_TIME_MINUTES;
         boolean flushImmediatelyIngestion = flushImmediately != null && Objects.requireNonNull(flushImmediately).trim().length() > 0
                 ? Boolean.valueOf(flushImmediately)
@@ -93,7 +93,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
                 tableName,
                 logTableMapping, mappingType, flushImmediatelyIngestion,
                 proxyUrl, backOffMin, backOffMax);
-        return new KustoStrategy(MIN_WINDOW_SIZE, DEFAULT_WINDOW_SIZE, true, Deflater.DEFAULT_COMPRESSION,
+        return new KustoStrategy(MIN_BACKOFF_TIME_SECONDS, MAX_BACKOFF_TIME_SECONDS, true, Deflater.DEFAULT_COMPRESSION,
                 config.getStrSubstitutor(),
                 kustoLog4jConfig);
     }
@@ -103,9 +103,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
     }
 
     /**
-     * A rollover.
-     *
-     * @param manager
+     * @param manager The rolling file manager , for example a rolling file which renames files for archival
      * @return RolloverDescription
      */
     @Override

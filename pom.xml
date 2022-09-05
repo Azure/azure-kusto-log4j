@@ -13,7 +13,6 @@
         <maven.doap.skip>true</maven.doap.skip>
         <awaitility.version>4.2.0</awaitility.version>
         <commons.csv.version>1.9.0</commons.csv.version>
-        <failsafe.version>3.2.4</failsafe.version>
         <formatter.version>2.20.0</formatter.version>
         <jacoco.version>0.8.8</jacoco.version>
         <junit.version>5.9.0</junit.version>
@@ -35,11 +34,6 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dev.failsafe</groupId>
-            <artifactId>failsafe</artifactId>
-            <version>${failsafe.version}</version>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure.kusto</groupId>

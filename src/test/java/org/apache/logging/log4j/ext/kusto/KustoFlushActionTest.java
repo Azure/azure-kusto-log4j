@@ -5,28 +5,34 @@ package org.apache.logging.log4j.ext.kusto;
 import org.apache.logging.log4j.core.appender.rolling.action.FileRenameAction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.microsoft.azure.kusto.data.exceptions.DataServiceException;
+import com.microsoft.azure.kusto.data.exceptions.KustoDataExceptionBase;
 import com.microsoft.azure.kusto.ingest.exceptions.IngestionClientException;
 import com.microsoft.azure.kusto.ingest.exceptions.IngestionServiceException;
 
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
+import static org.apache.logging.log4j.ext.kusto.Constants.INGESTION_RETRIES;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
-import dev.failsafe.RetryPolicy;
+import io.github.resilience4j.core.IntervalFunction;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 class KustoFlushActionTest {
 
@@ -55,7 +61,7 @@ class KustoFlushActionTest {
     @Test
     void executeSuccess() {
         ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
-        Mockito.doNothing().when(kustoClientInstance).ingestFile(fileNameCaptor.capture());
+        Mockito.doNothing().when(kustoClientInstance).ingestRolledFile(fileNameCaptor.capture());
         try (MockedStatic<KustoClientInstance> staticSingleton = mockStatic(KustoClientInstance.class)) {
             staticSingleton.when(KustoClientInstance::getInstance).thenReturn(kustoClientInstance);
             kustoFlushAction.execute();
@@ -69,33 +75,38 @@ class KustoFlushActionTest {
         }
     }
 
-    @Test
-    void executeFailure() throws IngestionClientException, IOException, IngestionServiceException {
+    @ParameterizedTest
+    @CsvSource({"false,3","true,1"})
+    void executeFailure(boolean isPermanent , int retries) throws IngestionClientException, IOException, IngestionServiceException {
         String backedOutPath = String.format("%s%s%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "backout",
                 File.separator,
                 "delegate-archive.log");
         Path backoutFilePath = Paths.get(backedOutPath);
         Files.deleteIfExists(backoutFilePath);
         ArgumentCaptor<String> fileNameCaptor = ArgumentCaptor.forClass(String.class);
-        kustoClientInstance.ingestionRetryPolicy = RetryPolicy.builder().handle(RuntimeException.class)
-                .withBackoff(100, 500, ChronoUnit.MILLIS)
-                .withMaxRetries(2)
+        RetryConfig retryConfig = RetryConfig.custom()
+                .intervalFunction(IntervalFunction.ofExponentialBackoff(1,
+                        IntervalFunction.DEFAULT_MULTIPLIER, 5))
+                .retryOnException(this::isTransientException)
+                .failAfterMaxAttempts(false).maxAttempts(3)
                 .build();
+        Exception exceptionToThrow = isPermanent ? new RuntimeException(new DataServiceException("file","Bad mapping", true)) : new IngestionServiceException("An ingestion exception has occurred");
+        kustoClientInstance.ingestionRetry = Retry.of(INGESTION_RETRIES, retryConfig);
         Mockito.doCallRealMethod().when(kustoClientInstance).backOutFile(anyString());
-        Mockito.doCallRealMethod().when(kustoClientInstance).ingestFile(anyString());
-        Mockito.doThrow(new IngestionServiceException("An ingest exception occurred")).when(kustoClientInstance)
-                .ingestLogs(fileNameCaptor.capture());
+        Mockito.doCallRealMethod().when(kustoClientInstance).ingestRolledFile(anyString());
+        when(kustoClientInstance.ingestLogs(fileNameCaptor.capture())).
+                thenThrow(exceptionToThrow);
         try (MockedStatic<KustoClientInstance> staticSingleton = mockStatic(KustoClientInstance.class)) {
             staticSingleton.when(KustoClientInstance::getInstance).thenReturn(kustoClientInstance);
             kustoFlushAction.execute();
-            AtomicBoolean isCompleted = new AtomicBoolean();
-            await().atMost(5, TimeUnit.SECONDS).until(isActionCompleted());
+            await().atMost(10, TimeUnit.SECONDS).until(isActionCompleted());
             assertTrue(Files.exists(backoutFilePath));
             // Ingestion complete backed-out
             assertTrue(kustoFlushAction.isComplete());
         } catch (IOException e) {
             fail("IOException performing ingestFile() test", e);
         }
+        verify(kustoClientInstance,times(retries)).ingestLogs(anyString());
     }
 
     @Test
@@ -107,6 +118,12 @@ class KustoFlushActionTest {
             staticSingleton.verify(KustoClientInstance::getInstance);
             assertFalse(kustoFlushAction.isComplete());
         }
+    }
+
+    private boolean isTransientException(Throwable exception) {
+        Throwable innerException = exception.getCause();
+        return !(innerException instanceof KustoDataExceptionBase &&
+                ((KustoDataExceptionBase) innerException).isPermanent());
     }
 
     private Callable<Boolean> isActionCompleted() {

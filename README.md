@@ -17,8 +17,10 @@ Adding appender to log4j.properties
 The key parameters for rolling file are as documented in
 the [Rolling file log4j configuration](https://logging.apache.org/log4j/2.x/manual/appenders.html#RollingFileAppender)
 
-- fileName : The file name where the log files will be written locally (e.g C:/logs/logs.log)
-- filePattern : The rolled over file name with pattern (e.g C:/logs/logs-%d{yyyy-MM-dd-hh-mm-ss}-%i.log)
+- fileName : The file name where the log files will be written locally. This is a fully qualified path and not a
+  relative path (e.g C:/logs/logs.log)
+- filePattern : The rolled over file name with pattern. This is a fully qualified path and not a relative path (e.g C:
+  /logs/logs-%d{yyyy-MM-dd-hh-mm-ss}-%i.log)
 
 Configurations for using the Kusto log4j appender is as follows
 
@@ -36,7 +38,8 @@ Configurations for using the Kusto log4j appender is as follows
     - **proxyUrl**: Proxy url in case application is hosted behind a proxy
 
 - To attempt retries in case of ingestion failures, retransmission is attempted with the following configuration. 3
-  retries are attempted to ingest the logs
+  retries are attempted to ingest the logs. In the event that the file cannot be ingested it gets moved to the backout
+  directory in the same path defined in fileName
 
     - **backOffMinMinutes**: Min minutes to back off in the event that ingestion fails
     - **backOffMaxMinutes**: Max minutes to back off in the event that ingestion fails
@@ -88,9 +91,9 @@ $env:LOG4J2_ADX_INGEST_CLUSTER_URL="https://ingest-<cluster>.kusto.windows.net"
 $env:LOG4J2_ADX_APP_ID="<app-id>"
 $env:LOG4J2_ADX_APP_KEY="<app-key>" 
 ```
-
 followed by
 
 ```mvn clean package```
 
-If you are a maven user, maven dependency plugin can resolve the dependencies.
+If you are a maven user, maven dependency plugin can resolve the dependencies. 
+Note : The library uses resilience4j which is brought in automatically by the dependencies to perform retries.
