@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -68,6 +69,7 @@ public final class KustoClientInstance {
                 : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterPath,
                         kustoLog4jConfig.appId,
                         kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant);
+        csb.setClientVersionForTracing(String.format("Kusto.Log4j.Connector:%s",getPackageVersion()));
         if (kustoLog4jConfig.proxyUrl != null && !kustoLog4jConfig.proxyUrl.trim().equals("")) {
             HttpClientProperties proxy = HttpClientProperties.builder().proxy(HttpHost.create(kustoLog4jConfig.proxyUrl)).build();
             LOGGER.warn("Using proxy : {} ", kustoLog4jConfig.proxyUrl);
@@ -167,5 +169,17 @@ public final class KustoClientInstance {
         Throwable innerException = exception.getCause();
         return !(innerException instanceof KustoDataExceptionBase &&
                 ((KustoDataExceptionBase) innerException).isPermanent());
+    }
+
+    private static String getPackageVersion() {
+        try {
+            Properties props = new Properties();
+            try (InputStream versionFileStream = KustoClientInstance.class.getResourceAsStream("/app.properties")) {
+                props.load(versionFileStream);
+                return props.getProperty("version").trim();
+            }
+        } catch (Exception ignored) {
+        }
+        return "";
     }
 }
