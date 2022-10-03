@@ -76,8 +76,8 @@ class KustoFlushActionTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"false,3","true,1"})
-    void executeFailure(boolean isPermanent , int retries) throws IngestionClientException, IOException, IngestionServiceException {
+    @CsvSource({"false,3", "true,1"})
+    void executeFailure(boolean isPermanent, int retries) throws IngestionClientException, IOException, IngestionServiceException {
         String backedOutPath = String.format("%s%s%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "backout",
                 File.separator,
                 "delegate-archive.log");
@@ -90,12 +90,12 @@ class KustoFlushActionTest {
                 .retryOnException(this::isTransientException)
                 .failAfterMaxAttempts(false).maxAttempts(3)
                 .build();
-        Exception exceptionToThrow = isPermanent ? new RuntimeException(new DataServiceException("file","Bad mapping", true)) : new IngestionServiceException("An ingestion exception has occurred");
+        Exception exceptionToThrow = isPermanent ? new RuntimeException(new DataServiceException("file", "Bad mapping", true))
+                : new IngestionServiceException("An ingestion exception has occurred");
         kustoClientInstance.ingestionRetry = Retry.of(INGESTION_RETRIES, retryConfig);
         Mockito.doCallRealMethod().when(kustoClientInstance).backOutFile(anyString());
         Mockito.doCallRealMethod().when(kustoClientInstance).ingestRolledFile(anyString());
-        when(kustoClientInstance.ingestLogs(fileNameCaptor.capture())).
-                thenThrow(exceptionToThrow);
+        when(kustoClientInstance.ingestLogs(fileNameCaptor.capture())).thenThrow(exceptionToThrow);
         try (MockedStatic<KustoClientInstance> staticSingleton = mockStatic(KustoClientInstance.class)) {
             staticSingleton.when(KustoClientInstance::getInstance).thenReturn(kustoClientInstance);
             kustoFlushAction.execute();
@@ -106,7 +106,7 @@ class KustoFlushActionTest {
         } catch (IOException e) {
             fail("IOException performing ingestFile() test", e);
         }
-        verify(kustoClientInstance,times(retries)).ingestLogs(anyString());
+        verify(kustoClientInstance, times(retries)).ingestLogs(anyString());
     }
 
     @Test

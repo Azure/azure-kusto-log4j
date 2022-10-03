@@ -69,7 +69,7 @@ public final class KustoClientInstance {
                 : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterPath,
                         kustoLog4jConfig.appId,
                         kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant);
-        csb.setClientVersionForTracing(String.format("Kusto.Log4j.Connector:%s",getPackageVersion()));
+        csb.setClientVersionForTracing(String.format("Kusto.Log4j.Connector:%s", getPackageVersion()));
         if (kustoLog4jConfig.proxyUrl != null && !kustoLog4jConfig.proxyUrl.trim().equals("")) {
             HttpClientProperties proxy = HttpClientProperties.builder().proxy(HttpHost.create(kustoLog4jConfig.proxyUrl)).build();
             LOGGER.warn("Using proxy : {} ", kustoLog4jConfig.proxyUrl);
