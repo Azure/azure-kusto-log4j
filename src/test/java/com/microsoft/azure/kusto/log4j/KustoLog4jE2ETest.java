@@ -71,7 +71,7 @@ public class KustoLog4jE2ETest {
         // Refer: https://github.com/Azure/azure-kusto-java/pull/268/. Creating query client from ingest url
         String queryEndpoint = ingestUrl.replaceFirst("ingest-", "");
         LOGGER = LogManager.getLogger(KustoLog4jE2ETest.class);
-        LOGGER.info("Using query endpoint for tests : {} ",queryEndpoint);
+        LOGGER.info("Using query endpoint for tests : {} ", queryEndpoint);
         ConnectionStringBuilder engineCsb = ConnectionStringBuilder.createWithAadApplicationCredentials(queryEndpoint, appId, appKey,
                 tenantId);
         try {
