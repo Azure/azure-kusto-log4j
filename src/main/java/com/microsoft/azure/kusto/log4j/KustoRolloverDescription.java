@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-package org.apache.logging.log4j.ext.kusto;
+package com.microsoft.azure.kusto.log4j;
 
 import org.apache.logging.log4j.core.appender.rolling.RolloverDescription;
 import org.apache.logging.log4j.core.appender.rolling.action.Action;

@@ -1,26 +1,57 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.apache.logging.log4j</groupId>
-    <version>2.18.0</version>
+    <groupId>com.microsoft.azure.kusto</groupId>
+    <version>1.0.0</version>
     <artifactId>azure-kusto-log4j</artifactId>
     <name>Apache Log4j Kusto</name>
     <description>Kusto appender for Log4j.</description>
+    <!-- Project co-ordinates -->
+    <url>https://github.com/Azure/azure-kusto-log4j</url>
+    <scm>
+        <url>scm:git:https://github.com/Azure/azure-kusto-log4j</url>
+        <connection>scm:git:https://github.com/Azure/azure-kusto-log4j</connection>
+    </scm>
+    <distributionManagement>
+        <downloadUrl>https://github.com/Azure/azure-kusto-log4j/releases</downloadUrl>
+    </distributionManagement>
+    <!-- Distribution licenses -->
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <!-- Maintainers -->
+    <developers>
+        <developer>
+            <id>microsoft</id>
+            <name>Microsoft</name>
+        </developer>
+    </developers>
+    <!-- Project properties -->
     <properties>
+        <!-- list of generic project properties -->
         <docLabel>Kusto Documentation</docLabel>
         <projectDir>/azure-kusto-log4j</projectDir>
-        <module.name>org.apache.logging.log4j.kusto</module.name>
+        <module.name>com.microsoft.azure.kusto</module.name>
         <maven.doap.skip>true</maven.doap.skip>
+        <!-- dependency and library versions -->
         <awaitility.version>4.2.0</awaitility.version>
         <commons.csv.version>1.9.0</commons.csv.version>
-        <formatter.version>2.20.0</formatter.version>
+        <formatter.version>2.16.0</formatter.version>
         <jacoco.version>0.8.8</jacoco.version>
+        <java.version>1.8</java.version>
         <junit.version>5.9.0</junit.version>
-        <kusto.data.version>3.1.3</kusto.data.version>
+        <kusto.version>3.2.0</kusto.version>
         <littleproxy.version>1.1.2</littleproxy.version>
-        <log4j.version>2.18.0</log4j.version>
-        <maven.compiler.version>3.10.1</maven.compiler.version>
-        <mockito.version>4.7.0</mockito.version>
+        <log4j.version>2.19.0</log4j.version>
+        <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
+        <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
+        <maven.dependency.plugin.version>3.3.0</maven.dependency.plugin.version>
+        <maven.source.plugin.version>3.2.1</maven.source.plugin.version>
+        <mockito.version>4.8.0</mockito.version>
         <!--Sonar properties for tests-->
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
@@ -28,18 +59,20 @@
         <surefire.version>3.0.0-M7</surefire.version>
         <sonar.language>java</sonar.language>
     </properties>
-
+    <!-- Direct dependencies -->
     <dependencies>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>${log4j.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure.kusto</groupId>
             <artifactId>kusto-ingest</artifactId>
-            <version>${kusto.data.version}</version>
+            <version>${kusto.version}</version>
         </dependency>
+        <!-- Test dependencies -->
         <dependency>
             <groupId>org.littleshoot</groupId>
             <artifactId>littleproxy</artifactId>
@@ -83,20 +116,16 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <!--
-    mvn versions:display-plugin-updates
-    mvn versions:display-dependency-updates
-    -->
     <!-- Build Settings -->
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.version}</version>
+                <version>${maven.compiler.plugin.version}</version>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <failOnWarning>false</failOnWarning>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
             <plugin>
@@ -105,14 +134,14 @@
                 <version>${jacoco.version}</version>
                 <executions>
                     <execution>
-                        <id>jacoco-initialize</id>
+                        <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
                     <execution>
-                        <id>jacoco-site</id>
-                        <phase>package</phase>
+                        <id>report</id>
+                        <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
                         </goals>
@@ -131,6 +160,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
+
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
@@ -140,6 +170,38 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <configuration>
+                    <flattenMode>oss</flattenMode>
+                </configuration>
+                <executions>
+                    <!-- enable flattening -->
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <!-- ensure proper cleanup -->
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
     </build>
 </project>

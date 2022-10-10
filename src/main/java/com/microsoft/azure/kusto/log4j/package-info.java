@@ -3,4 +3,4 @@
 /**
  * Kusto appender.
  */
-package org.apache.logging.log4j.ext.kusto;
+package com.microsoft.azure.kusto.log4j;
