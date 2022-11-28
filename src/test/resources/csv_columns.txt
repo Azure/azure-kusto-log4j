@@ -1,0 +1,1 @@
+ (timenanos:long ,timemillis:long,level:string ,threadid:string,threadname:string,threadpriority:int,formattedmessage:string,loggerfqcn:string,loggername:string,marker:string,thrownproxy:string,source:string,contextmap:string,contextstack:string )
