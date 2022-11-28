@@ -44,7 +44,7 @@
         <jacoco.version>0.8.8</jacoco.version>
         <java.version>1.8</java.version>
         <junit.version>5.9.0</junit.version>
-        <kusto.version>3.2.1</kusto.version>
+        <kusto.version>4.0.0</kusto.version>
         <littleproxy.version>1.1.2</littleproxy.version>
         <log4j.version>2.19.0</log4j.version>
         <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
