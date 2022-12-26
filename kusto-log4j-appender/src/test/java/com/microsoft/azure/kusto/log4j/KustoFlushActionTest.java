@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,7 +36,8 @@ import java.util.concurrent.TimeUnit;
 
 class KustoFlushActionTest {
 
-    private static final String FILE_SOURCE_ATTRIBUTE = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "delegate.log");
+    private static final String FILE_SOURCE_ATTRIBUTE = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator,
+            "src/test/resources/delegate.log");
     private static final String FILE_TARGET_ATTRIBUTE = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "delegate-archive.log");
 
     private static final FileRenameAction DELEGATE_RENAME_ACTION = new FileRenameAction(new File(FILE_SOURCE_ATTRIBUTE),
@@ -49,7 +51,7 @@ class KustoFlushActionTest {
         kustoClientInstance = mock(KustoClientInstance.class);
         kustoFlushAction = new KustoFlushAction(DELEGATE_RENAME_ACTION, FILE_TARGET_ATTRIBUTE);
         try {
-            Files.copy(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "delegate.log"),
+            Files.copy(Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "src/test/resources/delegate.log"),
                     Paths.get(FILE_SOURCE_ATTRIBUTE),
                     REPLACE_EXISTING);
         } catch (IOException e) {
