@@ -21,6 +21,19 @@
 - [Create Azure Data Explorer Cluster and DB](https://docs.microsoft.com/en-us/azure/data-explorer/create-cluster-database-portal)
 - [Create Azure Active Directory App Registration and grant it permissions to DB](https://docs.microsoft.com/en-us/azure/kusto/management/access-control/how-to-provision-aad-app) (
   save the app key and the application ID for later)
+- Create a table in Azure Data Explorer which will be used to store log data.
+  For example, We have created a table with name log4jTest
+
+```
+  .create table log4jTest (timenanos:long,timemillis:long,level:string,threadid:string,threadname:string,threadpriority:int,formattedmessage:string,loggerfqcn:string,loggername:string,marker:string,thrownproxy:string,source:string,contextmap:string,contextstack:string)
+```
+
+- Create a mapping for the table created in Azure Data Explorer
+  For example, I have created a csv mapping with name log4jCsvTestMapping
+
+```
+  .create table log4jTest ingestion csv mapping 'log4jCsvTestMapping' '[{"Name":"timenanos","DataType":"","Ordinal":"0","ConstValue":null},{"Name":"timemillis","DataType":"","Ordinal":"1","ConstValue":null},{"Name":"level","DataType":"","Ordinal":"2","ConstValue":null},{"Name":"threadid","DataType":"","Ordinal":"3","ConstValue":null},{"Name":"threadname","DataType":"","Ordinal":"4","ConstValue":null},{"Name":"threadpriority","DataType":"","Ordinal":"5","ConstValue":null},{"Name":"formattedmessage","DataType":"","Ordinal":"6","ConstValue":null},{"Name":"loggerfqcn","DataType":"","Ordinal":"7","ConstValue":null},{"Name":"loggername","DataType":"","Ordinal":"8","ConstValue":null},{"Name":"marker","DataType":"","Ordinal":"9","ConstValue":null},{"Name":"thrownproxy","DataType":"","Ordinal":"10","ConstValue":null},{"Name":"source","DataType":"","Ordinal":"11","ConstValue":null},{"Name":"contextmap","DataType":"","Ordinal":"12","ConstValue":null},{"Name":"contextstack","DataType":"","Ordinal":"13","ConstValue":null}]'
+```
 
 ### Selecting the log4j configuration format
 
@@ -57,6 +70,9 @@ found [here](https://logging.apache.org/log4j/2.x/manual/configuration.html) in 
 
 If the selected log4j configuration format is xml, the following attributes of KustoStrategy needs to be configured
 
+Note : As mentioned above in the prerequisites, we have created a ADX table with name log4jTest and mapping with name
+log4jCsvTestMapping. We will be using those below.
+
 ```
 <KustoStrategy
    clusterIngestUrl="${sys:LOG4J2_ADX_INGEST_CLUSTER_URL}"
@@ -64,10 +80,10 @@ If the selected log4j configuration format is xml, the following attributes of K
    appKey="${sys:LOG4J2_ADX_APP_KEY}"
    appTenant="${sys:LOG4J2_ADX_TENANT_ID}"
    dbName="${sys:LOG4J2_ADX_DB_NAME}"
-   tableName="Name-of-created-table-in-ADX"
-   logTableMapping="Name-of-mapping-created-in-ADX-for-the-table"
-   mappingType="json/csv-default-is-csv"
-   flushImmediately="whether-flush-logs-immediately-default-is-false"
+   tableName="log4jTest"
+   logTableMapping="log4jCsvTestMapping"
+   mappingType="csv"
+   flushImmediately="false"
 />
 
 ```
@@ -81,10 +97,10 @@ If the selected log4j configuration format is json, the following attributes of 
         "appKey": "${sys:LOG4J2_ADX_APP_KEY}",
         "appTenant": "${sys:LOG4J2_ADX_TENANT_ID}",
         "dbName": "${sys:LOG4J2_ADX_DB_NAME}",
-        "tableName": "Name-of-created-table-in-ADX",
-        "logTableMapping": "Name-of-mapping-created-in-ADX-for-the-table",
-        "mappingType": "json/csv-default-is-csv",
-        "flushImmediately": "whether-flush-logs-immediately-default-is-false"
+        "tableName": "log4jTest",
+        "logTableMapping": "log4jCsvTestMapping",
+        "mappingType": "csv",
+        "flushImmediately": "false"
       }
 ```
 
@@ -97,10 +113,10 @@ If the selected log4j configuration format is yaml, the following attributes of 
         appKey: ${sys:LOG4J2_ADX_APP_KEY}
         appTenant: ${sys:LOG4J2_ADX_TENANT_ID}
         dbName: ${sys:LOG4J2_ADX_DB_NAME}
-        tableName: Name-of-created-table-in-ADX
-        logTableMapping: Name-of-mapping-created-in-ADX-for-the-table
-        mappingType: json/csv-default-is-csv
-        flushImmediately: whether-flush-logs-immediately-default-is-false
+        tableName: log4jTest
+        logTableMapping: log4jCsvTestMapping
+        mappingType: csv
+        flushImmediately: false
 ```
 
 If the selected log4j configuration format is properties, the following attributes of KustoStrategy needs to be
@@ -113,8 +129,8 @@ appender.rolling.strategy.appId=${sys:LOG4J2_ADX_APP_ID}
 appender.rolling.strategy.appKey=${sys:LOG4J2_ADX_APP_KEY}
 appender.rolling.strategy.appTenant=${sys:LOG4J2_ADX_TENANT_ID}
 appender.rolling.strategy.dbName=${sys:LOG4J2_ADX_DB_NAME}
-appender.rolling.strategy.tableName=Name-of-created-table-in-ADX
-appender.rolling.strategy.logTableMapping=Name-of-mapping-created-in-ADX-for-the-table
+appender.rolling.strategy.tableName=log4jTest
+appender.rolling.strategy.logTableMapping=log4jCsvTestMapping
 appender.rolling.strategy.mappingType=json/csv-default-is-csv
 appender.rolling.strategy.flushImmediately=whether-flush-logs-immediately-default-is-false
 ```
