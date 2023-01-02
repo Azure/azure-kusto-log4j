@@ -187,7 +187,7 @@ public class KustoLog4jE2ETest {
                         new RuntimeException(i + " - A Random exception"));
             }
             await().atMost(90, TimeUnit.SECONDS).until(ingestionCompleted());
-            String[] levelsToCheck = new String[]{logInfoMessage, logWarnMessage, logErrorMessage};
+            String[] levelsToCheck = new String[] {logInfoMessage, logWarnMessage, logErrorMessage};
             for (String logLevel : levelsToCheck) {
                 String queryToExecute = String.format("%s | where formattedmessage has '%s'| summarize dcount(formattedmessage)",
                         log4jCsvTableName, logLevel);

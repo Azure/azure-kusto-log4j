@@ -68,10 +68,10 @@ public final class KustoClientInstance {
         boolean useManagedIdentity = StringUtils.isBlank(kustoLog4jConfig.appKey) || StringUtils.isBlank(kustoLog4jConfig.appTenant);
         ConnectionStringBuilder csb = useManagedIdentity
                 ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl,
-                kustoLog4jConfig.appId)
+                        kustoLog4jConfig.appId)
                 : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterIngestUrl,
-                kustoLog4jConfig.appId,
-                kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant);
+                        kustoLog4jConfig.appId,
+                        kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant);
         csb.setClientVersionForTracing(String.format("Kusto.Log4j.Connector:%s", getPackageVersion()));
         if (StringUtils.isNotBlank(kustoLog4jConfig.proxyUrl)) {
             HttpClientProperties proxy = HttpClientProperties.builder().proxy(HttpHost.create(kustoLog4jConfig.proxyUrl)).build();

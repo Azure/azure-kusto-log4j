@@ -148,7 +148,7 @@ mvn compile exec:java -Dexec.mainClass="org.example.KustoLog4JSampleApp"
 
 ### More information
 
-[Kusto Log4J Connector](https://github.com/Azure/azure-kusto-log4j)
+Please refer to [Kusto Log4J Connector](https://github.com/Azure/azure-kusto-log4j) 
 
 If you don't have a Microsoft Azure subscription you can get a FREE trial
 account [here](http://go.microsoft.com/fwlink/?LinkId=330212)
