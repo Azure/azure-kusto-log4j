@@ -87,7 +87,7 @@ public final class KustoClientInstance {
         ingestionProperties.setFlushImmediately(kustoLog4jConfig.flushImmediately);
         boolean useMapping = StringUtils.isNotEmpty(kustoLog4jConfig.logTableMapping) && StringUtils.isNotEmpty(kustoLog4jConfig.mappingType);
         if (useMapping) {
-            LOGGER.error("Using mapping {}  of type  {} ", kustoLog4jConfig.logTableMapping,
+            LOGGER.info("Using mapping {}  of type  {} ", kustoLog4jConfig.logTableMapping,
                     kustoLog4jConfig.mappingType);
             IngestionMapping.IngestionMappingKind mappingType = "json".equalsIgnoreCase(kustoLog4jConfig.mappingType) ? JSON : CSV;
             ingestionProperties.getIngestionMapping()
@@ -181,6 +181,7 @@ public final class KustoClientInstance {
                 return props.getProperty("version").trim();
             }
         } catch (Exception ignored) {
+            LOGGER.error("Error occured while getting the package version");
         }
         return "";
     }
