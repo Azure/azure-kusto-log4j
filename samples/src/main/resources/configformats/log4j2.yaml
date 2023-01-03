@@ -1,0 +1,38 @@
+---
+configuration:
+  status: INFO
+  Appenders:
+    Console:
+      name: ConsoleAppender
+      target: SYSTEM_OUT
+      PatternLayout:
+        pattern: "%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"
+    RollingFile:
+      name: ADXRollingFile
+      fileName: kusto-application-${date:yyyyMMdd}.log
+      filePattern: logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz
+      KustoStrategy:
+        clusterIngestUrl: ${sys:LOG4J2_ADX_INGEST_CLUSTER_URL}
+        appId: ${sys:LOG4J2_ADX_APP_ID}
+        appKey: ${sys:LOG4J2_ADX_APP_KEY}
+        appTenant: ${sys:LOG4J2_ADX_TENANT_ID}
+        dbName: ${sys:LOG4J2_ADX_DB_NAME}
+        tableName: log4jTest
+        logTableMapping: log4jCsvTestMapping
+        mappingType: csv
+        flushImmediately: 'true'
+      CsvLogEventLayout:
+        delimiter: ","
+        quoteMode: ALL
+      Policies:
+        SizeBasedTriggeringPolicy:
+          size: 10 KB
+        TimeBasedTriggeringPolicy:
+          interval: '60'
+          modulate: 'true'
+  Loggers:
+    Root:
+      level: debug
+      AppenderRef:
+        - ref: ConsoleAppender
+        - ref: ADXRollingFile

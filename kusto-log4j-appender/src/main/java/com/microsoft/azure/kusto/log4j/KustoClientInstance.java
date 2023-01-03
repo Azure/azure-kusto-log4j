@@ -27,6 +27,7 @@ import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,12 +48,10 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class KustoClientInstance {
 
+    static final String INGESTION_RETRIES = "INGESTION_RETRIES";
     private static final Logger LOGGER = StatusLogger.getLogger();
     private static final AtomicReference<KustoClientInstance> ATOMIC_INSTANCE = new AtomicReference<>();
     private static final RetryRegistry RETRY_REGISTRY = RetryRegistry.ofDefaults();
-
-    static final String INGESTION_RETRIES = "INGESTION_RETRIES";
-
     private final IngestClient ingestClient;
     private final IngestionProperties ingestionProperties;
     Retry ingestionRetry;
@@ -87,7 +86,7 @@ public final class KustoClientInstance {
         ingestionProperties.setFlushImmediately(kustoLog4jConfig.flushImmediately);
         boolean useMapping = StringUtils.isNotEmpty(kustoLog4jConfig.logTableMapping) && StringUtils.isNotEmpty(kustoLog4jConfig.mappingType);
         if (useMapping) {
-            LOGGER.error("Using mapping {}  of type  {} ", kustoLog4jConfig.logTableMapping,
+            LOGGER.info("Using mapping {}  of type  {} ", kustoLog4jConfig.logTableMapping,
                     kustoLog4jConfig.mappingType);
             IngestionMapping.IngestionMappingKind mappingType = "json".equalsIgnoreCase(kustoLog4jConfig.mappingType) ? JSON : CSV;
             ingestionProperties.getIngestionMapping()
@@ -124,6 +123,19 @@ public final class KustoClientInstance {
         return ATOMIC_INSTANCE.get();
     }
 
+    private static String getPackageVersion() {
+        try {
+            Properties props = new Properties();
+            try (InputStream versionFileStream = KustoClientInstance.class.getResourceAsStream("/app.properties")) {
+                props.load(versionFileStream);
+                return props.getProperty("version").trim();
+            }
+        } catch (Exception ignored) {
+            LOGGER.error("Error occured while getting the package version");
+        }
+        return "";
+    }
+
     void ingestRolledFile(String filePath) {
         try {
             ingestionRetry.executeCheckedSupplier(() -> ingestLogs(filePath));
@@ -143,6 +155,7 @@ public final class KustoClientInstance {
     /**
      * In case ingestion fails after retries, the logfile is moved to a backout directory that is in the same folder
      * as the path where the log file is being processed from (this allows for manual retry)
+     *
      * @param filePath The file that failed processing
      */
     void backOutFile(String filePath) {
@@ -171,17 +184,5 @@ public final class KustoClientInstance {
         Throwable innerException = exception.getCause();
         return !(innerException instanceof KustoDataExceptionBase &&
                 ((KustoDataExceptionBase) innerException).isPermanent());
-    }
-
-    private static String getPackageVersion() {
-        try {
-            Properties props = new Properties();
-            try (InputStream versionFileStream = KustoClientInstance.class.getResourceAsStream("/app.properties")) {
-                props.load(versionFileStream);
-                return props.getProperty("version").trim();
-            }
-        } catch (Exception ignored) {
-        }
-        return "";
     }
 }

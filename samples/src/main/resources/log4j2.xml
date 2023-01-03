@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="ConsoleAppender" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+        <RollingFile name="ADXRollingFile" fileName="kusto-application-${date:yyyyMMdd}.log"
+                     filePattern="logs/$${date:yyyy-MM}/app-%d{MM-dd-yyyy}-%i.log.gz">
+            <KustoStrategy
+                    clusterIngestUrl="${sys:LOG4J2_ADX_INGEST_CLUSTER_URL}"
+                    appId="${sys:LOG4J2_ADX_APP_ID}"
+                    appKey="${sys:LOG4J2_ADX_APP_KEY}"
+                    appTenant="${sys:LOG4J2_ADX_TENANT_ID}"
+                    dbName="${sys:LOG4J2_ADX_DB_NAME}"
+                    tableName="log4jTest"
+                    logTableMapping="log4jCsvTestMapping"
+                    mappingType="csv"
+                    flushImmediately="true"
+            />
+            <CsvLogEventLayout delimiter="," quoteMode="ALL"/>
+            <!-- References policies from https://logging.apache.org/log4j/2.x/manual/appenders.html -->
+            <Policies>
+                <!-- Recommended size is 4 MB -->
+                <SizeBasedTriggeringPolicy size="10 KB"/>
+                <!--
+                The interval determines in conjunction with file pattern the time for rollup. If file has pattern
+                file-yyyy-MM-dd-hh-mm.log then rollover happens evey 5 minutes (interval below)
+                With a date pattern file-yyyy-MM-dd-hh.log with hours as the most specific item, rollover would happen
+                every 5 hours
+                -->
+                <TimeBasedTriggeringPolicy interval="60" modulate="true"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="ConsoleAppender"/>
+            <AppenderRef ref="ADXRollingFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

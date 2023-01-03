@@ -88,17 +88,17 @@ public class KustoLog4jE2ETest {
             queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
             // Create the table with columns
             String tableColumns = new String(Files.readAllBytes(
-                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "csv_columns.txt")));
+                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "src/test/resources/csv_columns.txt")));
             queryClient.execute(databaseName, String.format(".create table %s %s", log4jCsvTableName, tableColumns));
             // create a policy for batching
             String ingestionPolicy = new String(Files.readAllBytes(
-                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "table_policy.txt")));
+                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "src/test/resources/table_policy.txt")));
             queryClient.execute(databaseName,
                     String.format(".alter table %s policy ingestionbatching @'%s'", log4jCsvTableName,
                             ingestionPolicy));
             // create a mapping
             String tableCsvMapping = new String(Files.readAllBytes(
-                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "mappings.txt")));
+                    Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "src/test/resources/mappings.txt")));
             queryClient.execute(databaseName,
                     String.format(".create table %s ingestion csv mapping '%s_mapping' '%s' ", log4jCsvTableName,
                             log4jCsvTableName, tableCsvMapping));

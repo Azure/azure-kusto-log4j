@@ -45,36 +45,37 @@ Configurations for using the Kusto log4j appender is as follows
     - **backOffMaxMinutes**: Max minutes to back off in the event that ingestion fails
 
 ```xml
+
 <Configuration status="WARN">
-    <Appenders>
-        <RollingFile name="ADXRollingFile" fileName="<fileName>"
-                     filePattern="<filePattern>">
-            <KustoStrategy
-                    clusterIngestUrl="https://ingest-<cluster>.kusto.windows.net"
-                    appId=""
-                    appKey=""
-                    appTenant=""
-                    dbName=""
-                    tableName=""
-                    logTableMapping=""
-                    mappingType=""
-                    flushImmediately=""
-                    proxyUrl=""
-                    backOffMinMinutes=""
-                    backOffMaxMinutes=""
-            />
-            <CsvLogEventLayout delimiter="," quoteMode="ALL"/>
-            <!-- References policies from https://logging.apache.org/log4j/2.x/manual/appenders.html -->
-            <Policies>
-              <!-- Recommended size is 4 MB -->
-                <SizeBasedTriggeringPolicy size="4 MB"/>
-              <!-- 
-              The interval determines in conjunction with file pattern the time for rollup. If file has pattern
-              file-yyyy-MM-dd-hh-mm.log then rollover happens evey 5 minutes (interval below)
-              With a date pattern file-yyyy-MM-dd-hh.log with hours as the most specific item, rollover would happen
-              every 5 hours 
-              -->
-                <TimeBasedTriggeringPolicy interval="5" modulate="true"/>
+  <Appenders>
+    <RollingFile name="ADXRollingFile" fileName="<fileName>"
+                 filePattern="<filePattern>">
+      <KustoStrategy
+              clusterIngestUrl="${sys:LOG4J2_ADX_INGEST_CLUSTER_URL}"
+              appId="${sys:LOG4J2_ADX_APP_ID}"
+              appKey="${sys:LOG4J2_ADX_APP_KEY}"
+              appTenant="${sys:LOG4J2_ADX_TENANT_ID}"
+              dbName="${sys:LOG4J2_ADX_DB_NAME}"
+              tableName=""
+              logTableMapping=""
+              mappingType=""
+              flushImmediately=""
+              proxyUrl=""
+              backOffMinMinutes=""
+              backOffMaxMinutes=""
+      />
+      <CsvLogEventLayout delimiter="," quoteMode="ALL"/>
+      <!-- References policies from https://logging.apache.org/log4j/2.x/manual/appenders.html -->
+      <Policies>
+        <!-- Recommended size is 4 MB -->
+        <SizeBasedTriggeringPolicy size="4 MB"/>
+        <!-- 
+        The interval determines in conjunction with file pattern the time for rollup. If file has pattern
+        file-yyyy-MM-dd-hh-mm.log then rollover happens evey 5 minutes (interval below)
+        With a date pattern file-yyyy-MM-dd-hh.log with hours as the most specific item, rollover would happen
+        every 5 hours 
+        -->
+        <TimeBasedTriggeringPolicy interval="5" modulate="true"/>
             </Policies>
         </RollingFile>
     </Appenders>
