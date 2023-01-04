@@ -92,7 +92,7 @@ Configurations for using the Kusto log4j appender is as follows
 
 How to build:
 ----------------------
-In power-shell the following can be set
+For Windows, the following environment variables need to be set in powershell
 
 ```sh
 $env:LOG4J2_ADX_DB_NAME="<db-name>"
@@ -101,6 +101,16 @@ $env:LOG4J2_ADX_INGEST_CLUSTER_URL="https://ingest-<cluster>.kusto.windows.net"
 $env:LOG4J2_ADX_APP_ID="<app-id>"
 $env:LOG4J2_ADX_APP_KEY="<app-key>" 
 ```
+For Mac/Linux, the following environment variables need to be set in the terminal
+
+```sh
+export LOG4J2_ADX_DB_NAME="<db-name>"
+export LOG4J2_ADX_TENANT_ID="<tenant-id>"
+export LOG4J2_ADX_INGEST_CLUSTER_URL="https://ingest-<cluster>.kusto.windows.net"
+export LOG4J2_ADX_APP_ID="<app-id>"
+export LOG4J2_ADX_APP_KEY="<app-key>"
+```
+
 followed by 
 
 ```mvn clean compiler:compile compiler:testCompile surefire:test```
