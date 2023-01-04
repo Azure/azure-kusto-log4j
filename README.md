@@ -50,11 +50,11 @@ Configurations for using the Kusto log4j appender is as follows
         <RollingFile name="ADXRollingFile" fileName="<fileName>"
                      filePattern="<filePattern>">
             <KustoStrategy
-                    clusterIngestUrl="https://ingest-<cluster>.kusto.windows.net"
-                    appId=""
-                    appKey=""
-                    appTenant=""
-                    dbName=""
+                    clusterIngestUrl="${env:LOG4J2_ADX_INGEST_CLUSTER_URL}"
+                    appId="${env:LOG4J2_ADX_APP_ID}"
+                    appKey="${env:LOG4J2_ADX_APP_KEY}"
+                    appTenant="${env:LOG4J2_ADX_TENANT_ID}"
+                    dbName="${env:LOG4J2_ADX_DB_NAME}"
                     tableName=""
                     logTableMapping=""
                     mappingType=""

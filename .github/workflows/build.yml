@@ -46,7 +46,6 @@ jobs:
         if: always()
         with:
           files: |
-            data/target/surefire-reports/*.xml
-            ingest/target/surefire-reports/*.xml
+            kusto-log4j-appender/target/surefire-reports/*.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2

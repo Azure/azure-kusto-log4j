@@ -2,10 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.microsoft.azure.kusto</groupId>
-    <version>1.0.0</version>
     <artifactId>azure-kusto-log4j</artifactId>
     <name>Apache Log4j Kusto</name>
-    <description>Kusto appender for Log4j.</description>
+    <description>Kusto appender for Log4j</description>
+    <packaging>pom</packaging>
+    <version>${revision}</version>
+
     <!-- Project co-ordinates -->
     <url>https://github.com/Azure/azure-kusto-log4j</url>
     <scm>
@@ -15,6 +17,7 @@
     <distributionManagement>
         <downloadUrl>https://github.com/Azure/azure-kusto-log4j/releases</downloadUrl>
     </distributionManagement>
+
     <!-- Distribution licenses -->
     <licenses>
         <license>
@@ -23,6 +26,7 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
     <!-- Maintainers -->
     <developers>
         <developer>
@@ -30,8 +34,10 @@
             <name>Microsoft</name>
         </developer>
     </developers>
+
     <!-- Project properties -->
     <properties>
+        <revision>1.0.0</revision>
         <!-- list of generic project properties -->
         <docLabel>Kusto Documentation</docLabel>
         <projectDir>/azure-kusto-log4j</projectDir>
@@ -59,114 +65,21 @@
         <surefire.version>3.0.0-M7</surefire.version>
         <sonar.language>java</sonar.language>
     </properties>
-    <!-- Direct dependencies -->
-    <dependencies>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.microsoft.azure.kusto</groupId>
-            <artifactId>kusto-ingest</artifactId>
-            <version>${kusto.version}</version>
-        </dependency>
-        <!-- Test dependencies -->
-        <dependency>
-            <groupId>org.littleshoot</groupId>
-            <artifactId>littleproxy</artifactId>
-            <version>${littleproxy.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-            <version>${commons.csv.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-params</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>${awaitility.version}</version>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+
+    <modules>
+        <module>samples</module>
+        <module>kusto-log4j-appender</module>
+    </modules>
+
     <!-- Build Settings -->
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>${maven.compiler.plugin.version}</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>${jacoco.version}</version>
-                <executions>
-                    <execution>
-                        <id>prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>report</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>${surefire.version}</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-
-            <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>${formatter.version}</version>
+                <version>2.16.0</version>
                 <configuration>
-                    <configFile>${project.basedir}/formatter.xml</configFile>
+                    <configFile>${session.executionRootDirectory}/formatter.xml</configFile>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
