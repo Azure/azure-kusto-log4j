@@ -1,4 +1,8 @@
-Kusto appender for Log4j.
+# Kusto appender for Log4j
+Apache Log4J 2 sink for Azure Data Explorer.
+
+
+This sink allows you to easily stream your log data to Azure Data Explorer, where you can analyze, visualize, and alert on your logs in real time.
 
 Motivation and usage.
 ----------------------
