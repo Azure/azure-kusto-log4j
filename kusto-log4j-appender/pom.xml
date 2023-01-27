@@ -78,7 +78,24 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
+    <!-- create a profile for cases where there is need for fat jars -->
+    <profiles>
+        <profile>
+            <id>fatjar</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
     <build>
         <plugins>
             <plugin>
