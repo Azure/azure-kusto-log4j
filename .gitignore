@@ -101,4 +101,6 @@ modules.xml
 # Sonarlint plugin
 .idea/sonarlint
 /.idea/
-/target/
+target/*
+*target
+*flattened-pom.xml
