@@ -157,7 +157,7 @@ appender.rolling.strategy.flushImmediately=whether-flush-logs-immediately-defaul
 
 ```sh
 cd samples
-mvn compile exec:java -Dexec.mainClass="org.example.KustoLog4JSampleApp"
+mvn compile exec:java -Dexec.mainClass="com.microsoft.azure.kusto.log4j.sample.KustoLog4JSampleApp"
 
 ```
 
