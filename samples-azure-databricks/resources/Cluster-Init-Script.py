@@ -3,14 +3,6 @@ dbutils.fs.put("/databricks/scripts/init-log4j-kusto-logging.sh","""
 #!/bin/bash
 DB_HOME=/databricks
 SPARK_HOME=$DB_HOME/spark
-# All the environment variables that need to be set for writing logs to Kusto
-
-LOG4J2_ADX_INGEST_CLUSTER_URL="https://ingest-<>.kusto.windows.net"
-LOG4J2_ADX_APP_ID="App Id"
-LOG4J2_ADX_APP_KEY="App Key"
-LOG4J2_ADX_TENANT_ID="Tenant"
-LOG4J2_ADX_DB_NAME="DB"
-
 
 echo "BEGIN: Downloading Kusto log4j library dependencies"
 wget --quiet -O /mnt/driver-daemon/jars/azure-kusto-log4j-1.0.1-jar-with-dependencies.jar https://repo1.maven.org/maven2/com/microsoft/azure/kusto/kusto-log4j-appender/1.0.1/kusto-log4j-appender-1.0.1-jar-with-dependencies.jar
@@ -28,11 +20,11 @@ appender.rolling.name=RollingFile
 appender.rolling.fileName=log4j-kusto-active.log
 appender.rolling.filePattern=logs/log4j-kusto-%d{MM-dd-yy-HH-mm-ss}-%i.log.gz
 appender.rolling.strategy.type=KustoStrategy
-appender.rolling.strategy.clusterIngestUrl=$LOG4J2_ADX_INGEST_CLUSTER_URL
-appender.rolling.strategy.appId=$LOG4J2_ADX_APP_ID
-appender.rolling.strategy.appKey=$LOG4J2_ADX_APP_KEY
-appender.rolling.strategy.appTenant=$LOG4J2_ADX_TENANT_ID
-appender.rolling.strategy.dbName=$LOG4J2_ADX_DB_NAME
+appender.rolling.strategy.clusterIngestUrl=$ADX_INGEST_URL
+appender.rolling.strategy.appId=$ADX_APP_ID
+appender.rolling.strategy.appKey=$ADX_APP_KEY
+appender.rolling.strategy.appTenant=$ADX_TENANT_ID
+appender.rolling.strategy.dbName=$ADX_DB_NAME
 appender.rolling.strategy.tableName=log4jTest
 appender.rolling.strategy.logTableMapping=log4jCsvTestMapping
 appender.rolling.strategy.flushImmediately=false

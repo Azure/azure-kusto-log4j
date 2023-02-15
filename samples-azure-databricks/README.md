@@ -31,15 +31,25 @@ Further details about the init scripts of Azure Databricks cluster can be found 
 dbutils.fs.mkdirs("dbfs:/databricks/scripts/")
 ```
 - Execute in databricks notebook the python script in resources/Cluster-Init-Script.py which will download the [log4j2-ADX connector](https://github.com/Azure/azure-kusto-log4j) and adds custom appender to the log4j2.properties file in the driver, executor, as well as master-worker nodes.
+- Instead of directly entering credentials into a notebook to access Azure Data Explorer, it is recommended to use Azure Databricks secrets to store the credentials and reference them in notebooks and jobs. To manage secrets, please use the Azure Databricks CLI setup & documentation to access the Secrets API 2.0. Please refer [Secret Management in Azure Databricks](https://learn.microsoft.com/en-us/azure/databricks/security/secrets/).
+- For Example, to configure using databricks access token, please navigate to the user settings of databricks and Generate New Token, as shown in the below screenshot
+
+![alt text](resources/databricks-token-screenshot.png)
+- Navigate to the Cluster Configuration -> Advanced Options -> Environment Variables
+- Add the secrets created along with the scope as mentioned below in the screenshot
+
+![alt text](resources/databricks-env-secrets-screenshot.png)
+
 - Navigate to the Cluster Configuration -> Advanced Options -> Init Scripts.
 - Add the init script for "dbfs:/databricks/scripts/init-log4j-kusto-logging.sh"
 
-![alt text](https://techcommunity.microsoft.com/t5/image/serverpage/image-id/435868i88B7CB8465AF112B/image-size/large?v=v2&px=999)
+![alt text](resources/databricks-cluster-config-screenshot.png)
 
+- Navigate to the Cluster Configuration -> Advanced Options -> Spark.
 - After the above changes please restart the cluster 
 
 ### Verification Steps
-- After the cluster restart logs will be automatically pushed to ADX. Also application loggers can be configured to push logs to ADX as well.
+- After the cluster restart, logs will be automatically pushed to ADX. Also application loggers can be configured to push logs to ADX as well.
 - Now we can query the log4JTest table in ADX and check for the data ingested.
 
 Please refer to the following links
