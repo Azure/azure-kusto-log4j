@@ -50,7 +50,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             Objects.requireNonNull(initializedInstance, "Kusto initialized instance cannot be null");
         } catch (URISyntaxException e) {
             LOGGER.error("Could not initialize ingest client", e);
-            throw new RuntimeException(e);
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -92,13 +92,12 @@ public class KustoStrategy extends DefaultRolloverStrategy {
         boolean flushImmediatelyIngestion = flushImmediately != null && Objects.requireNonNull(flushImmediately).trim().length() > 0
                 ? Boolean.valueOf(flushImmediately)
                 : DEFAULT_FLUSH_IMMEDIATELY;
-        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterIngestUrl, LOG4J2_ADX_INGEST_CLUSTER_URL),
+        KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig.KustoLog4jConfigBuilder(getOrEnvVar(clusterIngestUrl, LOG4J2_ADX_INGEST_CLUSTER_URL),
                 getOrEnvVar(appId, LOG4J2_ADX_APP_ID),
                 getOrEnvVar(appKey, LOG4J2_ADX_APP_KEY),
-                getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID), dbName,
-                tableName,
-                logTableMapping, mappingType, flushImmediatelyIngestion,
-                proxyUrl, backOffMin, backOffMax);
+                getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID), dbName, tableName).addMapping(logTableMapping).addMappingType(mappingType)
+                        .addFlushImmediately(flushImmediatelyIngestion).addProxyUrl(proxyUrl).addBackOffMinSeconds(backOffMin).addBackOffMaxSeconds(backOffMax)
+                        .build();
         return new KustoStrategy(MIN_BACKOFF_TIME_SECONDS, MAX_BACKOFF_TIME_SECONDS, true, Deflater.DEFAULT_COMPRESSION,
                 config.getStrSubstitutor(),
                 kustoLog4jConfig);
