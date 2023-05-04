@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.azure.kusto.log4j;
 
+import com.microsoft.azure.kusto.data.Client;
+import com.microsoft.azure.kusto.data.ClientFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +23,6 @@ import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.HttpProxyServerBootstrap;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
-import com.microsoft.azure.kusto.data.ClientImpl;
 import com.microsoft.azure.kusto.data.KustoOperationResult;
 import com.microsoft.azure.kusto.data.KustoResultSetTable;
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder;
@@ -58,7 +59,7 @@ public class KustoLog4jE2ETest {
             File.separator,
             "rolling-%d{MM-dd-yy-hh-mm}-%i.log");
     private static Logger LOGGER;
-    private static ClientImpl queryClient;
+    private static Client queryClient;
 
     private static HttpProxyServer proxy;
 
@@ -75,7 +76,7 @@ public class KustoLog4jE2ETest {
         ConnectionStringBuilder engineCsb = ConnectionStringBuilder.createWithAadApplicationCredentials(queryEndpoint, appId, appKey,
                 tenantId);
         try {
-            queryClient = new ClientImpl(engineCsb);
+            queryClient = ClientFactory.createClient(engineCsb);//new Client(engineCsb);
         } catch (URISyntaxException ex) {
             Assertions.fail("Failed to create query client", ex);
         }

@@ -3,6 +3,7 @@
 package com.microsoft.azure.kusto.log4j;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpHost;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.status.StatusLogger;
@@ -73,7 +74,7 @@ public final class KustoClientInstance {
                 : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterIngestUrl,
                         kustoLog4jConfig.appId,
                         kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant);
-        csb.setClientVersionForTracing(String.format("Kusto.Log4j.Connector:%s", getPackageVersion()));
+        csb.setConnectorDetails("Kusto.Log4j.Connector", getPackageVersion(), null, null, false, null, Pair.emptyArray());
         if (StringUtils.isNotBlank(kustoLog4jConfig.proxyUrl)) {
             HttpClientProperties proxy = HttpClientProperties.builder().proxy(HttpHost.create(kustoLog4jConfig.proxyUrl)).build();
             LOGGER.info("Using proxy : {} ", kustoLog4jConfig.proxyUrl);
