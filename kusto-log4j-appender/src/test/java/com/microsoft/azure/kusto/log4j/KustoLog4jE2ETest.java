@@ -76,7 +76,7 @@ public class KustoLog4jE2ETest {
         ConnectionStringBuilder engineCsb = ConnectionStringBuilder.createWithAadApplicationCredentials(queryEndpoint, appId, appKey,
                 tenantId);
         try {
-            queryClient = ClientFactory.createClient(engineCsb);//new Client(engineCsb);
+            queryClient = ClientFactory.createClient(engineCsb);
         } catch (URISyntaxException ex) {
             Assertions.fail("Failed to create query client", ex);
         }
