@@ -35,6 +35,7 @@ jobs:
       - name: Run the Maven verify phase
         run: mvn --batch-mode --update-snapshots formatter:validate verify
         env:
+          LOG4J2_ADX_ENGINE_URL: ${{ secrets.LOG4J2_ADX_ENGINE_URL }}
           LOG4J2_ADX_INGEST_CLUSTER_URL: ${{ secrets.LOG4J2_ADX_INGEST_CLUSTER_URL }}
           LOG4J2_ADX_DB_NAME: ${{ secrets.LOG4J2_ADX_DB_NAME }}
           LOG4J2_ADX_APP_ID: ${{ secrets.LOG4J2_ADX_APP_ID }}
