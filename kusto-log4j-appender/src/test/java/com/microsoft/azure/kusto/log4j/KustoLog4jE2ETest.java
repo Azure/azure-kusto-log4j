@@ -129,8 +129,8 @@ public class KustoLog4jE2ETest {
         ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
         builder.setStatusLevel(Level.INFO);
         // create a rolling file appender
-        LOGGER.info("Using ingest cluster {} for tests", ingestUrl);
-        ComponentBuilder<?> kustoStrategy = builder.newComponent("KustoStrategy").addAttribute("clusterIngestUrl", ingestUrl)
+        ComponentBuilder<?> kustoStrategy = builder.newComponent("KustoStrategy")
+                .addAttribute("clusterIngestUrl", ingestUrl)
                 .addAttribute("appId", appId)
                 .addAttribute("appKey", appKey).addAttribute("appTenant", tenantId)
                 .addAttribute("dbName", databaseName)
