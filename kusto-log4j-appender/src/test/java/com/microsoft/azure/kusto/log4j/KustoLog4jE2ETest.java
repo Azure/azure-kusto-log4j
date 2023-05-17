@@ -69,9 +69,16 @@ public class KustoLog4jE2ETest {
     public static void setUp() {
         setupAndStartProxy();
         configureLog4J();
+
+        //***** Temp *******
+        LOGGER = LogManager.getLogger(KustoLog4jE2ETest.class);
+
+        System.out.println("----------------->>>>>>>>>>>>> "+ ingestUrl + " : ENV : "+ System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"));
+        LOGGER.warn("LOGGER ----------------->>>>>>>>>>>>> "+ ingestUrl + " : ENV : "+ System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"));
+        //
+
         // Refer: https://github.com/Azure/azure-kusto-java/pull/268/. Creating query client from ingest url
         String queryEndpoint = ingestUrl.replaceFirst("ingest-", "");
-        LOGGER = LogManager.getLogger(KustoLog4jE2ETest.class);
         LOGGER.info("Using query endpoint for tests : {} ", queryEndpoint);
         ConnectionStringBuilder engineCsb = ConnectionStringBuilder.createWithAadApplicationCredentials(queryEndpoint, appId, appKey,
                 tenantId);
