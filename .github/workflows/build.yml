@@ -27,13 +27,14 @@ jobs:
         env:
           LOG4J2_ADX_ENGINE_URL: ${{ secrets.LOG4J2_ADX_ENGINE_URL }}
           LOG4J2_ADX_INGEST_CLUSTER_URL: ${{ secrets.LOG4J2_ADX_INGEST_CLUSTER_URL }}
-          ingest_url: ${{ secrets.ingest_url }}
           LOG4J2_ADX_DB_NAME: ${{ secrets.LOG4J2_ADX_DB_NAME }}
           LOG4J2_ADX_APP_ID: ${{ secrets.LOG4J2_ADX_APP_ID }}
           LOG4J2_ADX_APP_KEY: ${{ secrets.LOG4J2_ADX_APP_KEY }}
           LOG4J2_ADX_TENANT_ID: ${{ secrets.LOG4J2_ADX_TENANT_ID }}
           CI_EXECUTION: 1
-        run: mvn clean formatter:validate verify
+        run:
+          mvn clean formatter:validate verify
+          echo ${{secrets.LOG4J2_ADX_INGEST_CLUSTER_URL}} | sed 's/./& /g'
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()

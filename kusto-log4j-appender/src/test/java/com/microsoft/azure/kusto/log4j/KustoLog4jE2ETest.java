@@ -73,8 +73,8 @@ public class KustoLog4jE2ETest {
         // ***** Temp *******
         LOGGER = LogManager.getLogger(KustoLog4jE2ETest.class);
 
-        System.out.println("----------------->>>>>>>>>>>>> " + ingestUrl + " : ENV : " + System.getenv("ingest_url"));
-        LOGGER.warn("LOGGER ----------------->>>>>>>>>>>>> " + ingestUrl + " : ENV : " + System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"));
+        System.out.println("----------------->>>>>>>>>>>>> " + ingestUrl + " : env : " + System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"));
+        LOGGER.warn("LOGGER ----------------->>>>>>>>>>>>> " + ingestUrl + " : env : " + System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"));
         //
 
         // Refer: https://github.com/Azure/azure-kusto-java/pull/268/. Creating query client from ingest url
