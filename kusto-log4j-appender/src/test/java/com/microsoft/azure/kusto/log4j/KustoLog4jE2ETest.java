@@ -73,7 +73,7 @@ public class KustoLog4jE2ETest {
         // ***** Temp *******
         LOGGER = LogManager.getLogger(KustoLog4jE2ETest.class);
 
-        System.out.println("----------------->>>>>>>>>>>>> " + ingestUrl + " : ENV : " + System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"));
+        System.out.println("----------------->>>>>>>>>>>>> " + ingestUrl + " : ENV : " + System.getenv("ingest_url"));
         LOGGER.warn("LOGGER ----------------->>>>>>>>>>>>> " + ingestUrl + " : ENV : " + System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"));
         //
 

@@ -10,6 +10,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '11' ]
     name: Java ${{ matrix.java }}
     steps:
       - uses: actions/checkout@v2
@@ -24,6 +27,7 @@ jobs:
         env:
           LOG4J2_ADX_ENGINE_URL: ${{ secrets.LOG4J2_ADX_ENGINE_URL }}
           LOG4J2_ADX_INGEST_CLUSTER_URL: ${{ secrets.LOG4J2_ADX_INGEST_CLUSTER_URL }}
+          ingest_url: ${{ secrets.ingest_url }}
           LOG4J2_ADX_DB_NAME: ${{ secrets.LOG4J2_ADX_DB_NAME }}
           LOG4J2_ADX_APP_ID: ${{ secrets.LOG4J2_ADX_APP_ID }}
           LOG4J2_ADX_APP_KEY: ${{ secrets.LOG4J2_ADX_APP_KEY }}
