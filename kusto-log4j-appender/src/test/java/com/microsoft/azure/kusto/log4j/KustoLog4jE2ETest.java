@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 package com.microsoft.azure.kusto.log4j;
 
+import com.microsoft.azure.kusto.data.Client;
+import com.microsoft.azure.kusto.data.ClientFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,7 +23,6 @@ import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.HttpProxyServerBootstrap;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
-import com.microsoft.azure.kusto.data.ClientImpl;
 import com.microsoft.azure.kusto.data.KustoOperationResult;
 import com.microsoft.azure.kusto.data.KustoResultSetTable;
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder;
@@ -58,7 +59,7 @@ public class KustoLog4jE2ETest {
             File.separator,
             "rolling-%d{MM-dd-yy-hh-mm}-%i.log");
     private static Logger LOGGER;
-    private static ClientImpl queryClient;
+    private static Client queryClient;
 
     private static HttpProxyServer proxy;
 
@@ -68,14 +69,17 @@ public class KustoLog4jE2ETest {
     public static void setUp() {
         setupAndStartProxy();
         configureLog4J();
+
+        // ***** Temp *******
+        LOGGER = LogManager.getLogger(KustoLog4jE2ETest.class);
+
         // Refer: https://github.com/Azure/azure-kusto-java/pull/268/. Creating query client from ingest url
         String queryEndpoint = ingestUrl.replaceFirst("ingest-", "");
-        LOGGER = LogManager.getLogger(KustoLog4jE2ETest.class);
         LOGGER.info("Using query endpoint for tests : {} ", queryEndpoint);
         ConnectionStringBuilder engineCsb = ConnectionStringBuilder.createWithAadApplicationCredentials(queryEndpoint, appId, appKey,
                 tenantId);
         try {
-            queryClient = new ClientImpl(engineCsb);
+            queryClient = ClientFactory.createClient(engineCsb);
         } catch (URISyntaxException ex) {
             Assertions.fail("Failed to create query client", ex);
         }
@@ -128,7 +132,8 @@ public class KustoLog4jE2ETest {
         ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
         builder.setStatusLevel(Level.INFO);
         // create a rolling file appender
-        ComponentBuilder<?> kustoStrategy = builder.newComponent("KustoStrategy").addAttribute("clusterIngestUrl", ingestUrl)
+        ComponentBuilder<?> kustoStrategy = builder.newComponent("KustoStrategy")
+                .addAttribute("clusterIngestUrl", ingestUrl)
                 .addAttribute("appId", appId)
                 .addAttribute("appKey", appKey).addAttribute("appTenant", tenantId)
                 .addAttribute("dbName", databaseName)
