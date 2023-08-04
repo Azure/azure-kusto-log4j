@@ -69,12 +69,15 @@ public final class KustoClientInstance {
                 .build();
         ingestionRetry = RETRY_REGISTRY.retry(INGESTION_RETRIES, retryConfig);
         boolean useManagedIdentity = StringUtils.isBlank(kustoLog4jConfig.appKey) || StringUtils.isBlank(kustoLog4jConfig.appTenant);
+        LOGGER.info("Using ManagedIdentity : {} / UserAuth : {} ", useManagedIdentity, kustoLog4jConfig.useInteractiveAuth);
         ConnectionStringBuilder csb = useManagedIdentity
                 ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl,
                         kustoLog4jConfig.appId)
-                : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterIngestUrl,
-                        kustoLog4jConfig.appId,
-                        kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant);
+                : (kustoLog4jConfig.useInteractiveAuth ? ConnectionStringBuilder.createWithUserPrompt(kustoLog4jConfig.clusterIngestUrl)
+                        : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterIngestUrl,
+                                kustoLog4jConfig.appId,
+                                kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant));
+
         Pair<String, String>[] additionalProperties = new Pair[] {Pair.of("ManagedIdentity", String.valueOf(useManagedIdentity))};
         csb.setConnectorDetails("Kusto.Log4j.Connector", getPackageVersion(), null, null, false, null, additionalProperties);
         if (StringUtils.isNotBlank(kustoLog4jConfig.proxyUrl)) {

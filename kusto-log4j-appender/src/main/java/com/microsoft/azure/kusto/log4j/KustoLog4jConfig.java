@@ -20,11 +20,11 @@ class KustoLog4jConfig {
     final Integer backOffMaxSeconds;
 
     final Boolean flushImmediately;
+    final Boolean useInteractiveAuth;
 
-    KustoLog4jConfig(String clusterIngestUrl, String appId, String appKey, String appTenant, String dbName, String tableName,
-            String logTableMapping, String mappingType, Boolean flushImmediately, String proxyUrl,
-            Integer backOffMinSeconds,
-            Integer backOffMaxSeconds) {
+    KustoLog4jConfig(String clusterIngestUrl, String appId, String appKey, String appTenant, Boolean useInteractiveAuth,
+            String dbName, String tableName, String logTableMapping, String mappingType, Boolean flushImmediately,
+            String proxyUrl, Integer backOffMinSeconds, Integer backOffMaxSeconds) {
         this.clusterIngestUrl = clusterIngestUrl;
         this.appId = appId;
         this.appKey = appKey;
@@ -37,5 +37,6 @@ class KustoLog4jConfig {
         this.proxyUrl = proxyUrl;
         this.backOffMaxSeconds = backOffMaxSeconds;
         this.backOffMinSeconds = backOffMinSeconds;
+        this.useInteractiveAuth = useInteractiveAuth;
     }
 }
