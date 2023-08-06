@@ -68,11 +68,12 @@ public final class KustoClientInstance {
                 .failAfterMaxAttempts(false)
                 .build();
         ingestionRetry = RETRY_REGISTRY.retry(INGESTION_RETRIES, retryConfig);
-        boolean useManagedIdentity = StringUtils.isBlank(kustoLog4jConfig.appKey) || StringUtils.isBlank(kustoLog4jConfig.appTenant);
+        boolean useManagedIdentity = StringUtils.isNotBlank(kustoLog4jConfig.managedIdentityId);
         LOGGER.info("Using ManagedIdentity : {} / UserAuth : {} ", useManagedIdentity, kustoLog4jConfig.useInteractiveAuth);
         ConnectionStringBuilder csb = useManagedIdentity
-                ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl,
-                        kustoLog4jConfig.appId)
+                ? ("system".equalsIgnoreCase(kustoLog4jConfig.managedIdentityId)
+                        ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl)
+                        : ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl, kustoLog4jConfig.appId))
                 : (kustoLog4jConfig.useInteractiveAuth ? ConnectionStringBuilder.createWithUserPrompt(kustoLog4jConfig.clusterIngestUrl)
                         : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterIngestUrl,
                                 kustoLog4jConfig.appId,

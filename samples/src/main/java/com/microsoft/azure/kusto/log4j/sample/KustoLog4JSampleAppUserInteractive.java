@@ -21,14 +21,18 @@ import java.util.concurrent.TimeUnit;
  * Uses interactive login which is handy for Development scenarios
  */
 public class KustoLog4JSampleAppUserInteractive {
-/*
-// Set up the tables
-.create table log4jcsv_user_interactive (timenanos:long ,timemillis:long,level:string ,threadid:string,threadname:string,threadpriority:int,formattedmessage:string,loggerfqcn:string,loggername:string,marker:string,thrownproxy:string,source:string,contextmap:string,contextstack:string ) 
-.create table log4jcsv_user_interactive ingestion csv mapping "log4jcsv_user_interactive_mapping" '[ {"Column": "timenanos", "Properties": {"Ordinal": "0"}},  {"Column": "timemillis", "Properties": {"Ordinal": "1"}},  {"Column": "level", "Properties": {"Ordinal": "2"}},  {"Column": "threadid", "Properties": {"Ordinal": "3"}},  {"Column": "threadname", "Properties": {"Ordinal": "4"}},  {"Column": "threadpriority", "Properties": {"Ordinal": "5"}},  {"Column": "formattedmessage", "Properties": {"Ordinal": "6"}},  {"Column": "loggerfqcn", "Properties": {"Ordinal": "7"}},  {"Column": "loggername", "Properties": {"Ordinal": "8"}},  {"Column": "marker", "Properties": {"Ordinal": "9"}},  {"Column": "thrownproxy", "Properties": {"Ordinal": "10"}},  {"Column": "source", "Properties": {"Ordinal": "11"}},  {"Column": "contextmap", "Properties": {"Ordinal": "12"}},  {"Column": "contextstack", "Properties": {"Ordinal": "13"}}]'
-.alter table log4jcsv_user_interactive policy ingestionbatching '{"MaximumBatchingTimeSpan":"00:00:05", "MaximumNumberOfItems": 1, "MaximumRawDataSizeMB": 100}'
-*/
-
-
+    /*
+     * // Set up the tables .create table log4jcsv_user_interactive (timenanos:long ,timemillis:long,level:string
+     * ,threadid:string,threadname:string,threadpriority:int,formattedmessage:string,loggerfqcn:string,loggername:string,marker:string,thrownproxy:string,source
+     * :string,contextmap:string,contextstack:string ) .create table log4jcsv_user_interactive ingestion csv mapping "log4jcsv_user_interactive_mapping" '[
+     * {"Column": "timenanos", "Properties": {"Ordinal": "0"}}, {"Column": "timemillis", "Properties": {"Ordinal": "1"}}, {"Column": "level", "Properties":
+     * {"Ordinal": "2"}}, {"Column": "threadid", "Properties": {"Ordinal": "3"}}, {"Column": "threadname", "Properties": {"Ordinal": "4"}}, {"Column":
+     * "threadpriority", "Properties": {"Ordinal": "5"}}, {"Column": "formattedmessage", "Properties": {"Ordinal": "6"}}, {"Column": "loggerfqcn", "Properties":
+     * {"Ordinal": "7"}}, {"Column": "loggername", "Properties": {"Ordinal": "8"}}, {"Column": "marker", "Properties": {"Ordinal": "9"}}, {"Column":
+     * "thrownproxy", "Properties": {"Ordinal": "10"}}, {"Column": "source", "Properties": {"Ordinal": "11"}}, {"Column": "contextmap", "Properties":
+     * {"Ordinal": "12"}}, {"Column": "contextstack", "Properties": {"Ordinal": "13"}}]' .alter table log4jcsv_user_interactive policy ingestionbatching
+     * '{"MaximumBatchingTimeSpan":"00:00:05", "MaximumNumberOfItems": 1, "MaximumRawDataSizeMB": 100}'
+     */
 
     private static Logger initializeLogger() {
         String fileNameAttribute = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "rolling.log");

@@ -37,7 +37,7 @@
 
     <!-- Project properties -->
     <properties>
-        <revision>2.0.0</revision>
+        <revision>2.0.1</revision>
         <!-- list of generic project properties -->
         <docLabel>Kusto Documentation</docLabel>
         <projectDir>/azure-kusto-log4j</projectDir>

@@ -78,6 +78,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             @PluginAttribute("appKey") final String appKey,
             @PluginAttribute("appTenant") final String appTenant,
             @PluginAttribute("useInteractiveAuth") final String useInteractiveAuth,
+            @PluginAttribute("managedIdentityId") final String managedIdentityId,
             @PluginAttribute("dbName") final String dbName,
             @PluginAttribute("tableName") final String tableName,
             @PluginAttribute("logTableMapping") final String logTableMapping,
@@ -102,10 +103,17 @@ public class KustoStrategy extends DefaultRolloverStrategy {
         KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterIngestUrl, LOG4J2_ADX_INGEST_CLUSTER_URL),
                 getOrEnvVar(appId, LOG4J2_ADX_APP_ID),
                 getOrEnvVar(appKey, LOG4J2_ADX_APP_KEY),
-                getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID), useInteractiveAuthVal, dbName,
+                getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID),
+                useInteractiveAuthVal,
+                managedIdentityId,
+                dbName,
                 tableName,
-                logTableMapping, mappingType, flushImmediatelyIngestion,
-                proxyUrl, backOffMin, backOffMax);
+                logTableMapping,
+                mappingType,
+                flushImmediatelyIngestion,
+                proxyUrl,
+                backOffMin,
+                backOffMax);
         return new KustoStrategy(MIN_BACKOFF_TIME_SECONDS, MAX_BACKOFF_TIME_SECONDS, true, Deflater.DEFAULT_COMPRESSION,
                 config.getStrSubstitutor(),
                 kustoLog4jConfig);
