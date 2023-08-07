@@ -74,7 +74,9 @@ public final class KustoClientInstance {
                 ? ("system".equalsIgnoreCase(kustoLog4jConfig.managedIdentityId)
                         ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl)
                         : ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl, kustoLog4jConfig.appId))
-                : (kustoLog4jConfig.useInteractiveAuth ? ConnectionStringBuilder.createWithUserPrompt(kustoLog4jConfig.clusterIngestUrl)
+                : (kustoLog4jConfig.useInteractiveAuth
+                        ? ConnectionStringBuilder.createWithUserPrompt(kustoLog4jConfig.clusterIngestUrl,
+                                StringUtils.defaultIfBlank(kustoLog4jConfig.appTenant, "organizations"), null)
                         : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterIngestUrl,
                                 kustoLog4jConfig.appId,
                                 kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant));

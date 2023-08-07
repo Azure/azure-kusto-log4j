@@ -10,6 +10,10 @@ and [Real time analytics in Fabric][fabric].
 [synapse]: https://docs.microsoft.com/en-us/azure/synapse-analytics/data-explorer/data-explorer-overview
 [fabric]: https://learn.microsoft.com/en-us/fabric/real-time-analytics/overview
 
+With interactive login, application developers can use [Kusto Free](https://dataexplorer.azure.com/freecluster) to debug and log data from their applications without having to provision a cluster. Set the parameter useInteractiveAuth to true (and tenant if applicable) to use interactive login.
+
+[![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure.kusto/azure-kusto-log4j.svg)](https://search.maven.org/search?q=g:com.microsoft.azure.kusto%20AND%20a:azure-kusto-log4j)
+
 Motivation and usage
 ----------------------
 
