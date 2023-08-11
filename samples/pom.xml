@@ -1,7 +1,7 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>kusto-samples</artifactId>
+    <artifactId>samples</artifactId>
     <name>Apache Log4j Kusto samples</name>
     <description>Kusto appender for Log4j</description>
 
@@ -29,8 +29,8 @@
         </dependency>
         <dependency>
             <groupId>com.microsoft.azure.kusto</groupId>
-            <artifactId>azure-kusto-log4j</artifactId>
-            <version>1.0.0</version>
+            <artifactId>kusto-log4j-appender</artifactId>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>

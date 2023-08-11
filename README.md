@@ -2,9 +2,17 @@
 
 Apache Log4J 2 sink for Azure Data Explorer.
 
-> Note: v2.0.0 and above will require Java 11 and above.
+This sink allows you to stream your log data to
+[Azure Data Explorer][data_explorer], [Azure Synapse Data Explorer][synapse],
+and [Real time analytics in Fabric][fabric].
 
-This sink allows you to easily stream your log data to Azure Data Explorer, where you can analyze, visualize, and alert on your logs in real time.
+[data_explorer]: https://docs.microsoft.com/en-us/azure/data-explorer
+[synapse]: https://docs.microsoft.com/en-us/azure/synapse-analytics/data-explorer/data-explorer-overview
+[fabric]: https://learn.microsoft.com/en-us/fabric/real-time-analytics/overview
+
+With interactive login, application developers can use [Kusto Free](https://dataexplorer.azure.com/freecluster) to debug and log data from their applications without having to provision a cluster. Set the parameter useInteractiveAuth to true (and tenant if applicable) to use interactive login.
+
+[![Maven Central](https://img.shields.io/maven-central/v/com.microsoft.azure.kusto/azure-kusto-log4j.svg)](https://search.maven.org/search?q=g:com.microsoft.azure.kusto%20AND%20a:azure-kusto-log4j)
 
 Motivation and usage
 ----------------------
@@ -33,7 +41,7 @@ Configurations for using the Kusto log4j appender is as follows
 
 - KustoStrategy
   - **clusterIngestUrl**: Ingest URL. Configured using environment variable **LOG4J2_ADX_INGEST_CLUSTER_URL**
-  - **appId**: Service principal application id. Configured using environment variable **LOG4J2_ADX_APP_ID**
+  - **appId**: Service principal application id. Configured using environment variable **LOG4J2_ADX_APP_ID**.
   - **appKey**: Service principal application secret. Configured using environment variable **LOG4J2_ADX_APP_KEY**
   - **appTenant**: Tenant for the Service principal. Configured using environment variable **LOG4J2_ADX_TENANT_ID**
   - **dbName**: Database name. Configured using environment variable **LOG4J2_ADX_DB_NAME**
@@ -43,6 +51,8 @@ Configurations for using the Kusto log4j appender is as follows
   - **flushImmediately**: Boolean indicator to flush the logs immediately. Defaults to **_false_**. Note that making
       this true may cause additional load on the cluster
   - **proxyUrl**: Proxy url in case application is hosted behind a proxy
+  - **managedIdentityId**: Use managed identity id. If "system" is used a System Managed Identity is used, else a User Managed Identity is attempted
+  - **useInteractiveAuth**: Use interactive authentication. Defaults to **_false_**. If set to true, this is given precedence over AAD Auth and Managed Identity id (supplied through AppId)
 
 - To attempt retries in case of ingestion failures, retransmission is attempted with the following configuration. 3
   retries are attempted to ingest the logs. In the event that the file cannot be ingested it gets moved to the backout

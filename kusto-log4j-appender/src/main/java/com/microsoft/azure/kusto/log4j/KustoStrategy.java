@@ -34,6 +34,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
     private static final int MAX_BACKOFF_TIME_SECONDS = 3 * 60;
     private static final int DEFAULT_BACKOFF_MIN_TIME_MINUTES = 1;
     private static final Boolean DEFAULT_FLUSH_IMMEDIATELY = false;
+    private static final Boolean DEFAULT_INTERACTIVE_AUTH = false;
     private static final int DEFAULT_BACKOFF_MAX_TIME_MINUTES = 60;
 
     /* Constants in use */
@@ -59,6 +60,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
      * @param appId             The client app id for authentication
      * @param appKey            The client app secret for authentication
      * @param appTenant         The directory where the app id is created
+     * @param useInteractiveAuth            If interactive auth has to be used
      * @param dbName            The database name where the log table is
      * @param tableName         The table to ingest data into
      * @param logTableMapping   The mapping for the log table
@@ -75,6 +77,8 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             @PluginAttribute("appId") final String appId,
             @PluginAttribute("appKey") final String appKey,
             @PluginAttribute("appTenant") final String appTenant,
+            @PluginAttribute("useInteractiveAuth") final String useInteractiveAuth,
+            @PluginAttribute("managedIdentityId") final String managedIdentityId,
             @PluginAttribute("dbName") final String dbName,
             @PluginAttribute("tableName") final String tableName,
             @PluginAttribute("logTableMapping") final String logTableMapping,
@@ -84,28 +88,39 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             @PluginAttribute("backOffMinSeconds") String backOffMinSeconds,
             @PluginAttribute("backOffMaxSeconds") String backOffMaxSeconds,
             @PluginConfiguration final Configuration config) {
-        Integer backOffMax = backOffMaxSeconds != null && backOffMaxSeconds.trim().length() > 0 ? Integer.parseInt(backOffMaxSeconds)
+        Integer backOffMax = backOffMaxSeconds != null && !backOffMaxSeconds.trim().isEmpty() ? Integer.parseInt(backOffMaxSeconds)
                 : DEFAULT_BACKOFF_MAX_TIME_MINUTES;
-        Integer backOffMin = backOffMinSeconds != null && Objects.requireNonNull(backOffMinSeconds).trim().length() > 0
+        Integer backOffMin = backOffMinSeconds != null && !Objects.requireNonNull(backOffMinSeconds).trim().isEmpty()
                 ? Integer.parseInt(backOffMinSeconds)
                 : DEFAULT_BACKOFF_MIN_TIME_MINUTES;
-        boolean flushImmediatelyIngestion = flushImmediately != null && Objects.requireNonNull(flushImmediately).trim().length() > 0
+        boolean flushImmediatelyIngestion = flushImmediately != null && !Objects.requireNonNull(flushImmediately).trim().isEmpty()
                 ? Boolean.valueOf(flushImmediately)
                 : DEFAULT_FLUSH_IMMEDIATELY;
+        boolean useInteractiveAuthVal = useInteractiveAuth != null && !Objects.requireNonNull(useInteractiveAuth).trim().isEmpty()
+                ? Boolean.valueOf(useInteractiveAuth)
+                : DEFAULT_INTERACTIVE_AUTH;
+
         KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterIngestUrl, LOG4J2_ADX_INGEST_CLUSTER_URL),
                 getOrEnvVar(appId, LOG4J2_ADX_APP_ID),
                 getOrEnvVar(appKey, LOG4J2_ADX_APP_KEY),
-                getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID), dbName,
+                getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID),
+                useInteractiveAuthVal,
+                managedIdentityId,
+                dbName,
                 tableName,
-                logTableMapping, mappingType, flushImmediatelyIngestion,
-                proxyUrl, backOffMin, backOffMax);
+                logTableMapping,
+                mappingType,
+                flushImmediatelyIngestion,
+                proxyUrl,
+                backOffMin,
+                backOffMax);
         return new KustoStrategy(MIN_BACKOFF_TIME_SECONDS, MAX_BACKOFF_TIME_SECONDS, true, Deflater.DEFAULT_COMPRESSION,
                 config.getStrSubstitutor(),
                 kustoLog4jConfig);
     }
 
     private static String getOrEnvVar(String value, String envVarName) {
-        return value != null && value.trim().length() > 0 ? value : System.getenv(envVarName);
+        return value != null && !value.trim().isEmpty() ? value : System.getenv(envVarName);
     }
 
     /**
