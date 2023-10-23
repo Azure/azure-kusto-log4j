@@ -47,7 +47,7 @@
         <awaitility.version>4.2.0</awaitility.version>
         <commons.csv.version>1.10.0</commons.csv.version>
         <formatter.version>2.16.0</formatter.version>
-        <jacoco.version>0.8.8</jacoco.version>
+        <jacoco.version>0.8.11</jacoco.version>
         <java.version>1.8</java.version>
         <junit.version>5.9.3</junit.version>
         <kusto.version>5.0.1</kusto.version>
