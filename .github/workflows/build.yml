@@ -38,7 +38,7 @@ jobs:
           LOG4J2_ADX_TENANT_ID: ${{ secrets.LOG4J2_ADX_TENANT_ID }}
           CI_EXECUTION: 1
         run:
-          mvn clean formatter:validate verify
+          mvn clean formatter:validate install
       - name: Run the Javadoc generation
         run: mvn javadoc:javadoc
       - name: Run the sources package
