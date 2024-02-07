@@ -39,6 +39,10 @@ jobs:
           CI_EXECUTION: 1
         run:
           mvn clean formatter:validate verify
+      - name: Run the Javadoc generation
+        run: mvn javadoc:javadoc
+      - name: Run the sources package
+        run: mvn source:jar
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         continue-on-error: true
