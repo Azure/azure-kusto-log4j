@@ -34,7 +34,6 @@ jobs:
           CI_EXECUTION: 1
         run:
           mvn clean formatter:validate verify
-          echo java | sed 's/./& /g'
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: always()
