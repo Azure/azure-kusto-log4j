@@ -37,7 +37,7 @@
 
     <!-- Project properties -->
     <properties>
-        <revision>2.0.1</revision>
+        <revision>2.0.2</revision>
         <!-- list of generic project properties -->
         <docLabel>Kusto Documentation</docLabel>
         <projectDir>/azure-kusto-log4j</projectDir>
@@ -50,7 +50,7 @@
         <jacoco.version>0.8.8</jacoco.version>
         <java.version>1.8</java.version>
         <junit.version>5.9.3</junit.version>
-        <kusto.version>5.0.1</kusto.version>
+        <kusto.version>5.0.4</kusto.version>
         <littleproxy.version>1.1.2</littleproxy.version>
         <log4j.version>2.20.0</log4j.version>
         <maven.assembly.plugin.version>3.6.0</maven.assembly.plugin.version>
