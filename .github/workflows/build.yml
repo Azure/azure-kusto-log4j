@@ -1,11 +1,11 @@
 # This workflow will install the dependencies, run tests and lint every push
 
 name: Build Java
-
 on:
   push:
-    branches: [ master ]
+    branches: [ '**' ]
   pull_request:
+    branches: [ '**' ]
 
 jobs:
   build:
