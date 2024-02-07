@@ -10,6 +10,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      checks: write
+      pull-requests: write 
     strategy:
       matrix:
         java: [ '8','11' ]
@@ -35,10 +40,11 @@ jobs:
         run:
           mvn clean formatter:validate verify
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        continue-on-error: true
         if: always()
         with:
-          files: |
-            kusto-log4j-appender/target/surefire-reports/*.xml
+            files: |
+              kusto-log4j-appender/target/surefire-reports/*.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
