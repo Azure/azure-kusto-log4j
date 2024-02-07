@@ -1,25 +1,30 @@
 # This workflow will install the dependencies, run tests and lint every push
 
 name: Build Java
-
 on:
   push:
-    branches: [ master ]
+    branches: [ '**' ]
   pull_request:
+    branches: [ '**' ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: read
+      checks: write
+      pull-requests: write 
     strategy:
       matrix:
-        java: [ '11' ]
+        java: [ '8','11' ]
     name: Java ${{ matrix.java }}
     steps:
       - uses: actions/checkout@v2
       - name: Setup java ${{ matrix.java }}
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
+          java-version: ${{ matrix.java }}
           distribution: 'adopt'
           architecture: x64
           cache: 'maven'
@@ -33,13 +38,17 @@ jobs:
           LOG4J2_ADX_TENANT_ID: ${{ secrets.LOG4J2_ADX_TENANT_ID }}
           CI_EXECUTION: 1
         run:
-          mvn clean formatter:validate verify
-          echo java | sed 's/./& /g'
+          mvn clean formatter:validate install
+      - name: Run the Javadoc generation
+        run: mvn javadoc:javadoc
+      - name: Run the sources package
+        run: mvn source:jar
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        continue-on-error: true
         if: always()
         with:
-          files: |
-            kusto-log4j-appender/target/surefire-reports/*.xml
+            files: |
+              kusto-log4j-appender/target/surefire-reports/*.xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2

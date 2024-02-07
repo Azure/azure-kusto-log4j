@@ -1,0 +1,91 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+  workflow_dispatch:
+    inputs:
+        tag:
+            description: 'Tag'
+            required: true
+            default: 'refs/tags/v0.0.0'
+        upload_to_maven:
+            description: 'Upload to Maven'
+            required: false
+            default: false
+        github_release:
+            description: 'Create Github release'
+            required: false
+            default: false
+        upload_to_azure:
+            description: 'Upload to Azure storage'
+            required: false
+            default: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [ '8' ]
+    name: Java ${{ matrix.java }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+      - name: Setup java ${{ matrix.java }}
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'adopt'
+          java-version: ${{ matrix.java }}
+          cache: 'maven'
+      - name: Run the Maven verify phase
+        run: mvn clean package install source:jar javadoc:jar
+        env:
+            LOG4J2_ADX_ENGINE_URL: ${{ secrets.LOG4J2_ADX_ENGINE_URL }}
+            LOG4J2_ADX_INGEST_CLUSTER_URL: ${{ secrets.LOG4J2_ADX_INGEST_CLUSTER_URL }}
+            LOG4J2_ADX_DB_NAME: ${{ secrets.LOG4J2_ADX_DB_NAME }}
+            LOG4J2_ADX_APP_ID: ${{ secrets.LOG4J2_ADX_APP_ID }}
+            LOG4J2_ADX_APP_KEY: ${{ secrets.LOG4J2_ADX_APP_KEY }}
+            LOG4J2_ADX_TENANT_ID: ${{ secrets.LOG4J2_ADX_TENANT_ID }}        
+            CI_EXECUTION: 1            
+      - name: Get version
+        id: get_version
+        run: echo ::set-output name=VERSION::$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+      - name: Move artifacts to staging
+        run: |
+          version=${{ steps.get_version.outputs.VERSION }}
+          mkdir staging
+          cp kusto-log4j-appender/target/*.jar staging
+          cp kusto-log4j-appender/.flattened-pom.xml staging/kusto-log4j-appender-$version.pom
+      - name: Github Release
+        uses: anton-yurchenko/git-release@v6.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: |
+            staging/kusto-log4j-appender-${{ steps.get_version.outputs.VERSION }}.jar
+            staging/kusto-log4j-appender-${{ steps.get_version.outputs.VERSION }}-jar-with-dependencies.jar
+            staging/kusto-log4j-appender-${{ steps.get_version.outputs.VERSION }}-javadoc.jar
+            staging/kusto-log4j-appender-${{ steps.get_version.outputs.VERSION }}-sources.jar
+            staging/kusto-log4j-appender-${{ steps.get_version.outputs.VERSION }}.pom
+        continue-on-error: true
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.github_release == 'true') }}
+      - uses: LanceMcCarthy/Action-AzureBlobUpload@v2
+        name: Uploading to Azure storage
+        with:
+          connection_string: ${{ secrets.AZURE_STORAGE_CONNECTION_STRING}}
+          container_name: ${{ secrets.AZURE_STORAGE_CONTAINER}}
+          source_folder: staging
+          destination_folder: kusto/log4j/${{ steps.get_version.outputs.VERSION }}
+          delete_if_exists: true
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_azure == 'true') }}
+      - name: Trigger pipelines release
+        uses: jacopocarlini/azure-pipelines@v1.3
+        with:
+          azure-devops-project-url: '${{ secrets.AZURE_PIPELINES_RELEASE_REPO }}'
+          azure-devops-token: '${{ secrets.AZURE_PIPELINES_PAT }}'
+          azure-pipeline-name: 'java - partner-release'
+          azure-template-parameters:  '{"BlobPath": "kusto/log4j/${{ steps.get_version.outputs.VERSION }}"}'
+        if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.upload_to_maven == 'true') }}
