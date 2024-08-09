@@ -53,6 +53,7 @@ Configurations for using the Kusto log4j appender is as follows
   - **proxyUrl**: Proxy url in case application is hosted behind a proxy
   - **managedIdentityId**: Use managed identity id. If "system" is used a System Managed Identity is used, else a User Managed Identity is attempted
   - **useInteractiveAuth**: Use interactive authentication. Defaults to **_false_**. If set to true, this is given precedence over AAD Auth and Managed Identity id (supplied through AppId)
+  - **useAzCliAuth**: Use AZ cli based auth for local development. Defaults to **_false_**. If set to true, this is given precedence other auth mechanisms
 
 - To attempt retries in case of ingestion failures, retransmission is attempted with the following configuration. 3
   retries are attempted to ingest the logs. In the event that the file cannot be ingested it gets moved to the backout
