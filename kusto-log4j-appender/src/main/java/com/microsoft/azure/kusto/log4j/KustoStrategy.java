@@ -78,6 +78,7 @@ public class KustoStrategy extends DefaultRolloverStrategy {
             @PluginAttribute("appKey") final String appKey,
             @PluginAttribute("appTenant") final String appTenant,
             @PluginAttribute("useInteractiveAuth") final String useInteractiveAuth,
+            @PluginAttribute("useAzCliAuth") final String useAzCliAuth,
             @PluginAttribute("managedIdentityId") final String managedIdentityId,
             @PluginAttribute("dbName") final String dbName,
             @PluginAttribute("tableName") final String tableName,
@@ -99,12 +100,16 @@ public class KustoStrategy extends DefaultRolloverStrategy {
         boolean useInteractiveAuthVal = useInteractiveAuth != null && !Objects.requireNonNull(useInteractiveAuth).trim().isEmpty()
                 ? Boolean.valueOf(useInteractiveAuth)
                 : DEFAULT_INTERACTIVE_AUTH;
+        boolean useAzCliAuthVal = useAzCliAuth != null && !Objects.requireNonNull(useAzCliAuth).trim().isEmpty()
+                ? Boolean.valueOf(useAzCliAuth)
+                : DEFAULT_INTERACTIVE_AUTH;
 
         KustoLog4jConfig kustoLog4jConfig = new KustoLog4jConfig(getOrEnvVar(clusterIngestUrl, LOG4J2_ADX_INGEST_CLUSTER_URL),
                 getOrEnvVar(appId, LOG4J2_ADX_APP_ID),
                 getOrEnvVar(appKey, LOG4J2_ADX_APP_KEY),
                 getOrEnvVar(appTenant, LOG4J2_ADX_TENANT_ID),
                 useInteractiveAuthVal,
+                useAzCliAuthVal,
                 managedIdentityId,
                 dbName,
                 tableName,

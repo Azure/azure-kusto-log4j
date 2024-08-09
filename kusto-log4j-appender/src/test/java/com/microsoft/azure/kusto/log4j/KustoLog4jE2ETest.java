@@ -47,12 +47,6 @@ public class KustoLog4jE2ETest {
             "LOG4J2_ADX_DB_NAME has to be defined as an env var");
     private static final String ingestUrl = Objects.requireNonNull(System.getenv("LOG4J2_ADX_INGEST_CLUSTER_URL"),
             "LOG4J2_ADX_INGEST_CLUSTER_URL has to be defined as an env var");
-    private static final String appId = Objects.requireNonNull(System.getenv("LOG4J2_ADX_APP_ID"),
-            "LOG4J2_ADX_APP_ID has to be defined as an env var");
-    private static final String appKey = Objects.requireNonNull(System.getenv("LOG4J2_ADX_APP_KEY"),
-            "LOG4J2_ADX_APP_KEY has to be defined as an env var");
-    private static final String tenantId = Objects.requireNonNull(System.getenv("LOG4J2_ADX_TENANT_ID"),
-            "LOG4J2_ADX_TENANT_ID has to be defined as an env var");
     private static final String log4jCsvTableName = String.format("log4jcsv_%d", System.currentTimeMillis());
     private static final String fileNameAttribute = String.format("%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "rolling.log");
     private static final String filePatternAttribute = String.format("%s%s%s%s%s", System.getProperty("java.io.tmpdir"), File.separator, "archive",
@@ -76,8 +70,7 @@ public class KustoLog4jE2ETest {
         // Refer: https://github.com/Azure/azure-kusto-java/pull/268/. Creating query client from ingest url
         String queryEndpoint = ingestUrl.replaceFirst("ingest-", "");
         LOGGER.info("Using query endpoint for tests : {} ", queryEndpoint);
-        ConnectionStringBuilder engineCsb = ConnectionStringBuilder.createWithAadApplicationCredentials(queryEndpoint, appId, appKey,
-                tenantId);
+        ConnectionStringBuilder engineCsb = ConnectionStringBuilder.createWithAzureCli(queryEndpoint);
         try {
             queryClient = ClientFactory.createClient(engineCsb);
         } catch (URISyntaxException ex) {
@@ -134,8 +127,7 @@ public class KustoLog4jE2ETest {
         // create a rolling file appender
         ComponentBuilder<?> kustoStrategy = builder.newComponent("KustoStrategy")
                 .addAttribute("clusterIngestUrl", ingestUrl)
-                .addAttribute("appId", appId)
-                .addAttribute("appKey", appKey).addAttribute("appTenant", tenantId)
+                .addAttribute("useAzCliAuth", true)
                 .addAttribute("dbName", databaseName)
                 .addAttribute("backOffMinSeconds", 5)
                 .addAttribute("backOffMaxSeconds", 10)

@@ -69,19 +69,29 @@ public final class KustoClientInstance {
                 .build();
         ingestionRetry = RETRY_REGISTRY.retry(INGESTION_RETRIES, retryConfig);
         boolean useManagedIdentity = StringUtils.isNotBlank(kustoLog4jConfig.managedIdentityId);
-        LOGGER.info("Using ManagedIdentity : {} / UserAuth : {} ", useManagedIdentity, kustoLog4jConfig.useInteractiveAuth);
-        ConnectionStringBuilder csb = useManagedIdentity
-                ? ("system".equalsIgnoreCase(kustoLog4jConfig.managedIdentityId)
-                        ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl)
-                        : ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl, kustoLog4jConfig.appId))
-                : (kustoLog4jConfig.useInteractiveAuth
-                        ? ConnectionStringBuilder.createWithUserPrompt(kustoLog4jConfig.clusterIngestUrl,
-                                StringUtils.defaultIfBlank(kustoLog4jConfig.appTenant, "organizations"), null)
-                        : ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterIngestUrl,
-                                kustoLog4jConfig.appId,
-                                kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant));
-
-        Pair<String, String>[] additionalProperties = new Pair[] {Pair.of("ManagedIdentity", String.valueOf(useManagedIdentity))};
+        LOGGER.info("Using ManagedIdentity : {} / UserAuth : {} / CliAuth : {} ", useManagedIdentity, kustoLog4jConfig.useInteractiveAuth,
+                kustoLog4jConfig.useAzCliAuth);
+        ConnectionStringBuilder csb = null;
+        String authType = "AppId / AppKey";
+        if (useManagedIdentity) {
+            authType = "ManagedIdentity";
+            csb = ("system".equalsIgnoreCase(kustoLog4jConfig.managedIdentityId)
+                    ? ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl)
+                    : ConnectionStringBuilder.createWithAadManagedIdentity(kustoLog4jConfig.clusterIngestUrl, kustoLog4jConfig.appId));
+        } else if (kustoLog4jConfig.useInteractiveAuth) {
+            authType = "InteractiveAuth";
+            csb = ConnectionStringBuilder.createWithUserPrompt(kustoLog4jConfig.clusterIngestUrl,
+                    StringUtils.defaultIfBlank(kustoLog4jConfig.appTenant, "organizations"), null);
+        } else if (kustoLog4jConfig.useAzCliAuth) {
+            authType = "AzCliAuth";
+            csb = ConnectionStringBuilder.createWithAzureCli(kustoLog4jConfig.clusterIngestUrl);
+        } else {
+            LOGGER.info("Using AAD based auth as the fallback");
+            csb = ConnectionStringBuilder.createWithAadApplicationCredentials(kustoLog4jConfig.clusterIngestUrl,
+                    kustoLog4jConfig.appId,
+                    kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant);
+        }
+        Pair<String, String>[] additionalProperties = new Pair[] {Pair.of("AuthType", authType)};
         csb.setConnectorDetails("Kusto.Log4j.Connector", getPackageVersion(), null, null, false, null, additionalProperties);
         if (StringUtils.isNotBlank(kustoLog4jConfig.proxyUrl)) {
             HttpClientProperties proxy = HttpClientProperties.builder().proxy(HttpHost.create(kustoLog4jConfig.proxyUrl)).build();
