@@ -98,7 +98,8 @@ public final class KustoClientInstance {
         csb.setConnectorDetails("Kusto.Log4j", getPackageVersion(), null, null, false, null, additionalProperties);
         if (StringUtils.isNotBlank(kustoLog4jConfig.proxyUrl)) {
             InetSocketAddress proxyAddress = parseProxyUrl(kustoLog4jConfig.proxyUrl);
-            HttpClientProperties proxy = HttpClientProperties.builder().proxy(new ProxyOptions(com.azure.core.http.ProxyOptions.Type.HTTP, proxyAddress)).build();
+            HttpClientProperties proxy = HttpClientProperties.builder().proxy(new ProxyOptions(com.azure.core.http.ProxyOptions.Type.HTTP, proxyAddress))
+                    .build();
             LOGGER.info("Using proxy : {} ", kustoLog4jConfig.proxyUrl);
             ingestClient = IngestClientFactory.createClient(csb, proxy);
         } else {
@@ -221,20 +222,20 @@ public final class KustoClientInstance {
             if (!proxyUrl.startsWith("http://") && !proxyUrl.startsWith("https://")) {
                 urlToParse = "http://" + proxyUrl;
             }
-            
+
             URL url = new URL(urlToParse);
             String host = url.getHost();
             int port = url.getPort();
-            
+
             // Default HTTP proxy port is 8080 if not specified
             if (port == -1) {
                 port = 8080;
             }
-            
+
             if (host == null || host.isEmpty()) {
                 throw new IllegalArgumentException("Invalid proxy URL: host is missing");
             }
-            
+
             return new InetSocketAddress(host, port);
         } catch (MalformedURLException e) {
             // Try parsing as host:port format

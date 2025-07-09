@@ -107,3 +107,4 @@ target/*
 *target
 *flattened-pom.xml
 deps.txt
+kusto-log4j-appender/dependency-reduced-pom.xml
