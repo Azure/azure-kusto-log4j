@@ -1,1 +1,1 @@
-{"MaximumBatchingTimeSpan":"00:00:05", "MaximumNumberOfItems": 1, "MaximumRawDataSizeMB": 100}
+{"MaximumBatchingTimeSpan":"00:00:10", "MaximumNumberOfItems": 1, "MaximumRawDataSizeMB": 100}
