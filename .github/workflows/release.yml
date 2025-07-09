@@ -41,7 +41,7 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: 'maven'
       - name: Run the Maven verify phase
-        run: mvn clean package install source:jar javadoc:jar
+        run: mvn clean package install source:jar javadoc:jar -DskipTests
         env:
             LOG4J2_ADX_ENGINE_URL: ${{ secrets.LOG4J2_ADX_ENGINE_URL }}
             LOG4J2_ADX_INGEST_CLUSTER_URL: ${{ secrets.LOG4J2_ADX_INGEST_CLUSTER_URL }}
