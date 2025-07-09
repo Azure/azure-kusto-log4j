@@ -4,11 +4,11 @@ package com.microsoft.azure.kusto.log4j;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.http.HttpHost;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.status.StatusLogger;
 
-import com.microsoft.azure.kusto.data.HttpClientProperties;
+import com.microsoft.azure.kusto.data.http.HttpClientProperties;
+import com.azure.core.http.ProxyOptions;
 import com.microsoft.azure.kusto.data.auth.ConnectionStringBuilder;
 import com.microsoft.azure.kusto.data.exceptions.KustoDataExceptionBase;
 import com.microsoft.azure.kusto.ingest.IngestClient;
@@ -32,6 +32,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.MalformedURLException;
+import java.net.InetSocketAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -92,9 +95,10 @@ public final class KustoClientInstance {
                     kustoLog4jConfig.appKey, kustoLog4jConfig.appTenant);
         }
         Pair<String, String>[] additionalProperties = new Pair[] {Pair.of("AuthType", authType)};
-        csb.setConnectorDetails("Kusto.Log4j.Connector", getPackageVersion(), null, null, false, null, additionalProperties);
+        csb.setConnectorDetails("Kusto.Log4j", getPackageVersion(), null, null, false, null, additionalProperties);
         if (StringUtils.isNotBlank(kustoLog4jConfig.proxyUrl)) {
-            HttpClientProperties proxy = HttpClientProperties.builder().proxy(HttpHost.create(kustoLog4jConfig.proxyUrl)).build();
+            InetSocketAddress proxyAddress = parseProxyUrl(kustoLog4jConfig.proxyUrl);
+            HttpClientProperties proxy = HttpClientProperties.builder().proxy(new ProxyOptions(com.azure.core.http.ProxyOptions.Type.HTTP, proxyAddress)).build();
             LOGGER.info("Using proxy : {} ", kustoLog4jConfig.proxyUrl);
             ingestClient = IngestClientFactory.createClient(csb, proxy);
         } else {
@@ -202,5 +206,49 @@ public final class KustoClientInstance {
         } catch (Exception ignored) {
         }
         return "";
+    }
+
+    /**
+     * Parses a proxy URL string to extract host and port and creates an InetSocketAddress
+     * @param proxyUrl The proxy URL in format "host:port" or "http://host:port"
+     * @return InetSocketAddress for the proxy
+     * @throws IllegalArgumentException if the proxy URL is invalid
+     */
+    private static InetSocketAddress parseProxyUrl(String proxyUrl) {
+        try {
+            // Handle cases where proxyUrl might include protocol
+            String urlToParse = proxyUrl;
+            if (!proxyUrl.startsWith("http://") && !proxyUrl.startsWith("https://")) {
+                urlToParse = "http://" + proxyUrl;
+            }
+            
+            URL url = new URL(urlToParse);
+            String host = url.getHost();
+            int port = url.getPort();
+            
+            // Default HTTP proxy port is 8080 if not specified
+            if (port == -1) {
+                port = 8080;
+            }
+            
+            if (host == null || host.isEmpty()) {
+                throw new IllegalArgumentException("Invalid proxy URL: host is missing");
+            }
+            
+            return new InetSocketAddress(host, port);
+        } catch (MalformedURLException e) {
+            // Try parsing as host:port format
+            try {
+                String[] parts = proxyUrl.split(":");
+                if (parts.length == 2) {
+                    String host = parts[0].trim();
+                    int port = Integer.parseInt(parts[1].trim());
+                    return new InetSocketAddress(host, port);
+                }
+            } catch (NumberFormatException ignored) {
+                // Fall through to exception
+            }
+            throw new IllegalArgumentException("Invalid proxy URL format: " + proxyUrl + ". Expected format: 'host:port' or 'protocol://host:port'", e);
+        }
     }
 }

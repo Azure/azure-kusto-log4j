@@ -106,3 +106,4 @@ modules.xml
 target/*
 *target
 *flattened-pom.xml
+deps.txt

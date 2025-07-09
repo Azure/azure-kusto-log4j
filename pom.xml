@@ -22,7 +22,7 @@
     <licenses>
         <license>
             <name>MIT License</name>
-            <url>http://www.opensource.org/licenses/mit-license.php</url>
+            <url>https://www.opensource.org/licenses/mit-license.php</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -37,33 +37,34 @@
 
     <!-- Project properties -->
     <properties>
-        <revision>2.0.3</revision>
+        <revision>2.1.0</revision>
         <!-- list of generic project properties -->
         <docLabel>Kusto Documentation</docLabel>
         <projectDir>/azure-kusto-log4j</projectDir>
         <module.name>com.microsoft.azure.kusto</module.name>
         <maven.doap.skip>true</maven.doap.skip>
         <!-- dependency and library versions -->
-        <awaitility.version>4.2.0</awaitility.version>
-        <commons.csv.version>1.10.0</commons.csv.version>
-        <formatter.version>2.16.0</formatter.version>
-        <jacoco.version>0.8.11</jacoco.version>
+        <awaitility.version>4.2.2</awaitility.version>
+        <commons.csv.version>1.12.0</commons.csv.version>
+        <formatter.version>2.24.1</formatter.version>
+        <jackson.version>2.19.1</jackson.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <java.version>1.8</java.version>
-        <junit.version>5.10.0</junit.version>
-        <kusto.version>5.1.1</kusto.version>
+        <junit.version>5.11.3</junit.version>
+        <kusto.version>6.0.3</kusto.version>
         <littleproxy.version>1.1.2</littleproxy.version>
-        <log4j.version>2.20.0</log4j.version>
-        <maven.assembly.plugin.version>3.6.0</maven.assembly.plugin.version>
-        <maven.compiler.plugin.version>3.10.1</maven.compiler.plugin.version>
-        <maven.dependency.plugin.version>3.3.0</maven.dependency.plugin.version>
-        <maven.source.plugin.version>3.3.0</maven.source.plugin.version>
+        <log4j.version>2.24.3</log4j.version>
+        <maven.assembly.plugin.version>3.7.1</maven.assembly.plugin.version>
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven.dependency.plugin.version>3.8.1</maven.dependency.plugin.version>
+        <maven.source.plugin.version>3.3.1</maven.source.plugin.version>
         <mockito.core.version>4.11.0</mockito.core.version>
-        <mockito.inline.version>5.2.0</mockito.inline.version>
+        <mockito.inline.version>4.11.0</mockito.inline.version>
         <!--Sonar properties for tests-->
         <sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
         <sonar.jacoco.reportPath>${project.basedir}/../target/jacoco.exec</sonar.jacoco.reportPath>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <surefire.version>3.1.2</surefire.version>
+        <surefire.version>3.5.2</surefire.version>
         <sonar.language>java</sonar.language>
     </properties>
 
@@ -78,7 +79,7 @@
             <plugin>
                 <groupId>net.revelc.code.formatter</groupId>
                 <artifactId>formatter-maven-plugin</artifactId>
-                <version>2.16.0</version>
+                <version>2.24.1</version>
                 <configuration>
                     <configFile>${session.executionRootDirectory}/formatter.xml</configFile>
                     <encoding>UTF-8</encoding>
@@ -87,7 +88,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
-                <version>1.5.0</version>
+                <version>1.6.0</version>
                 <configuration>
                     <flattenMode>oss</flattenMode>
                 </configuration>

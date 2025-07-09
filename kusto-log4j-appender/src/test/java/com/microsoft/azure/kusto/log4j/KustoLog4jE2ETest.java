@@ -82,21 +82,21 @@ public class KustoLog4jE2ETest {
     private static void createLogTableAndPolicy() {
         try {
             // To be sure drop the table
-            queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
+            queryClient.executeMgmt(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
             // Create the table with columns
             String tableColumns = new String(Files.readAllBytes(
                     Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "csv_columns.txt")));
-            queryClient.execute(databaseName, String.format(".create table %s %s", log4jCsvTableName, tableColumns));
+            queryClient.executeMgmt(databaseName, String.format(".create table %s %s", log4jCsvTableName, tableColumns));
             // create a policy for batching
             String ingestionPolicy = new String(Files.readAllBytes(
                     Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "table_policy.txt")));
-            queryClient.execute(databaseName,
+            queryClient.executeMgmt(databaseName,
                     String.format(".alter table %s policy ingestionbatching @'%s'", log4jCsvTableName,
                             ingestionPolicy));
             // create a mapping
             String tableCsvMapping = new String(Files.readAllBytes(
                     Paths.get(System.getProperty("user.dir"), "src", "test", "resources", "mappings.txt")));
-            queryClient.execute(databaseName,
+            queryClient.executeMgmt(databaseName,
                     String.format(".create table %s ingestion csv mapping '%s_mapping' '%s' ", log4jCsvTableName,
                             log4jCsvTableName, tableCsvMapping));
         } catch (Exception ex) {
@@ -109,7 +109,7 @@ public class KustoLog4jE2ETest {
         context.close();
         Path archiveDirectory = Paths.get(filePatternAttribute).getParent();
         try (Stream<Path> paths = Files.walk(archiveDirectory)) {
-            queryClient.executeToJsonResult(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
+            queryClient.executeMgmt(databaseName, String.format(".drop table %s ifexists", log4jCsvTableName));
             paths.map(Path::toFile).forEach(File::deleteOnExit);
             File rollingFileToDelete = new File(fileNameAttribute);
             rollingFileToDelete.deleteOnExit();
@@ -188,7 +188,7 @@ public class KustoLog4jE2ETest {
             for (String logLevel : levelsToCheck) {
                 String queryToExecute = String.format("%s | where formattedmessage has '%s'| summarize dcount(formattedmessage)",
                         log4jCsvTableName, logLevel);
-                KustoOperationResult queryResults = queryClient.execute(databaseName, queryToExecute);
+                KustoOperationResult queryResults = queryClient.executeQuery(databaseName, queryToExecute);
                 KustoResultSetTable mainTableResult = queryResults.getPrimaryResults();
                 mainTableResult.next();
                 int countsRetrieved = mainTableResult.getInt(0);
@@ -205,7 +205,7 @@ public class KustoLog4jE2ETest {
         return () -> {
             String queryToExecute = String.format("%s | where formattedmessage == '99 - %s'|count",
                     log4jCsvTableName, "log4j info test");
-            KustoOperationResult queryResults = queryClient.execute(databaseName, queryToExecute);
+            KustoOperationResult queryResults = queryClient.executeQuery(databaseName, queryToExecute);
             KustoResultSetTable mainTableResult = queryResults.getPrimaryResults();
             mainTableResult.next();
             int countsRetrieved = mainTableResult.getInt(0);
