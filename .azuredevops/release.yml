@@ -86,7 +86,7 @@ jobs:
         maven
       path: $(Pipeline.Workspace)/.m2/repository
 
-  - bash: mvn clean package install source:jar javadoc:jar -B -DskipTests
+  - bash: mvn clean install javadoc:jar -B -DskipTests
     displayName: Build release artifacts
     env:
       MAVEN_OPTS: -Dmaven.repo.local=$(Pipeline.Workspace)/.m2/repository
