@@ -1,14 +1,90 @@
-# Temporary Azure Pipelines bootstrap for .github/workflows/build.yml
-
 trigger:
-- master
+  branches:
+    include:
+    - '*'
 
 pr:
-- master
+  branches:
+    include:
+    - '*'
 
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- script: echo "Hello from Azure Pipelines"
-  displayName: Hello world
+variables:
+- group: azure-kusto-log4j-e2e
+
+jobs:
+- job: BuildAndTest
+  displayName: Build and test
+  timeoutInMinutes: 60
+  strategy:
+    matrix:
+      Java8:
+        javaVersion: '8'
+      Java11:
+        javaVersion: '11'
+  steps:
+  - checkout: self
+    clean: true
+
+  - task: JavaToolInstaller@0
+    displayName: Use Java $(javaVersion)
+    inputs:
+      versionSpec: $(javaVersion)
+      jdkArchitectureOption: x64
+      jdkSourceOption: PreInstalled
+
+  - task: Cache@2
+    displayName: Cache Maven dependencies
+    inputs:
+      key: 'maven | "$(Agent.OS)" | **/pom.xml'
+      restoreKeys: |
+        maven | "$(Agent.OS)"
+        maven
+      path: $(Pipeline.Workspace)/.m2/repository
+
+  - bash: >
+      mvn clean formatter:validate install
+      -B
+      -Dtest='!KustoLog4jE2ETest'
+    displayName: Build and run unit tests for fork pull request
+    condition: and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'True'))
+    env:
+      MAVEN_OPTS: -Dmaven.repo.local=$(Pipeline.Workspace)/.m2/repository
+
+  - task: AzureCLI@2
+    displayName: Build and run Kusto integration tests
+    condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
+    inputs:
+      azureSubscription: $(AZURE_SERVICE_CONNECTION)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: mvn clean formatter:validate install -B
+    env:
+      LOG4J2_ADX_ENGINE_URL: $(LOG4J2_ADX_ENGINE_URL)
+      LOG4J2_ADX_INGEST_CLUSTER_URL: $(LOG4J2_ADX_INGEST_CLUSTER_URL)
+      LOG4J2_ADX_DB_NAME: $(LOG4J2_ADX_DB_NAME)
+      CI_EXECUTION: '1'
+      MAVEN_OPTS: -Dmaven.repo.local=$(Pipeline.Workspace)/.m2/repository
+
+  - bash: mvn javadoc:javadoc source:jar -B -DskipTests
+    displayName: Generate Javadocs and source package
+    condition: succeeded()
+    env:
+      MAVEN_OPTS: -Dmaven.repo.local=$(Pipeline.Workspace)/.m2/repository
+
+  - task: PublishTestResults@2
+    displayName: Publish test results
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: JUnit
+      testResultsFiles: kusto-log4j-appender/target/surefire-reports/*.xml
+      testRunTitle: Log4j Java $(javaVersion)
+      failTaskOnMissingResultsFile: true
+
+  - task: PublishCodeCoverageResults@2
+    displayName: Publish code coverage
+    condition: succeededOrFailed()
+    inputs:
+      summaryFileLocation: kusto-log4j-appender/target/site/jacoco/jacoco.xml
