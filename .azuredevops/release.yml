@@ -95,6 +95,12 @@ jobs:
       set -euo pipefail
 
       version="$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
+      tag_version="${RELEASE_TAG#v}"
+      if [[ "${version}" != "${tag_version}" ]]; then
+        echo "Release tag version '${tag_version}' does not match Maven project version '${version}'." >&2
+        exit 1
+      fi
+
       mkdir -p staging
       cp kusto-log4j-appender/target/*.jar staging/
       cp kusto-log4j-appender/.flattened-pom.xml \
@@ -126,6 +132,7 @@ jobs:
         $(Build.SourcesDirectory)/staging/*.jar
         $(Build.SourcesDirectory)/staging/*.pom
       addChangeLog: true
+    continueOnError: true
 
   - task: AzureCLI@2
     displayName: Upload artifacts to Azure Storage
@@ -137,6 +144,12 @@ jobs:
       workingDirectory: $(Build.SourcesDirectory)
       inlineScript: |
         set -euo pipefail
+
+        az storage blob delete-batch \
+          --account-name "$(AZURE_STORAGE_ACCOUNT)" \
+          --source "$(AZURE_STORAGE_CONTAINER)" \
+          --pattern "$(AZURE_STORAGE_PATH_PREFIX)/$(PROJECT_VERSION)/*" \
+          --auth-mode login
 
         az storage blob upload-batch \
           --account-name "$(AZURE_STORAGE_ACCOUNT)" \
