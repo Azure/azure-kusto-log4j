@@ -48,6 +48,7 @@ jobs:
       mvn clean formatter:validate install
       -B
       -Dtest='!KustoLog4jE2ETest'
+      -Dsurefire.failIfNoSpecifiedTests=false
     displayName: Build and run unit tests for fork pull request
     condition: and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'True'))
     env:
