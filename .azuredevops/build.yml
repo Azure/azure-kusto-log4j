@@ -58,7 +58,7 @@ jobs:
     displayName: Build and run Kusto integration tests
     condition: and(succeeded(), ne(variables['System.PullRequest.IsFork'], 'True'))
     inputs:
-      azureSubscription: $(AZURE_SERVICE_CONNECTION)
+      azureSubscription: kusto-connectors-arm-sc
       scriptType: bash
       scriptLocation: inlineScript
       inlineScript: mvn clean formatter:validate install -B
