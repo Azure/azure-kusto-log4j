@@ -27,7 +27,7 @@ parameters:
   default: false
 
 pool:
-  vmImage: ubuntu-latest
+  vmImage: ubuntu-24.04
 
 variables:
 - group: azure-kusto-log4j-e2e
